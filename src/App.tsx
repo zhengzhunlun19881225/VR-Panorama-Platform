@@ -40,6 +40,18 @@ import {
   Minimize2
 } from 'lucide-react';
 
+const SHARE_HASH_PREFIX = '#preview-';
+
+function getSharedProjectId(): string | null {
+  if (!window.location.hash.startsWith(SHARE_HASH_PREFIX)) return null;
+
+  try {
+    return decodeURIComponent(window.location.hash.slice(SHARE_HASH_PREFIX.length));
+  } catch {
+    return null;
+  }
+}
+
 function normalizeProjects(rawProjects: VRProject[]): VRProject[] {
   return rawProjects.map((p) => ({
     ...p,
@@ -78,9 +90,16 @@ export default function App() {
   });
 
   // Navigation State
-  const [viewMode, setViewMode] = useState<'list' | 'editor' | 'preview'>('list');
-  const [activeProjectId, setActiveProjectId] = useState<string>(projects[0]?.id || '');
-  const [activeSceneId, setActiveSceneId] = useState<string>('');
+  const initialSharedProject = projects.find((project) => project.id === getSharedProjectId());
+  const [viewMode, setViewMode] = useState<'list' | 'editor' | 'preview'>(
+    initialSharedProject ? 'preview' : 'list'
+  );
+  const [activeProjectId, setActiveProjectId] = useState<string>(
+    initialSharedProject?.id || projects[0]?.id || ''
+  );
+  const [activeSceneId, setActiveSceneId] = useState<string>(
+    initialSharedProject?.scenes[0]?.id || ''
+  );
 
   // Active Project & Scene Computations
   const currentProject = projects.find((p) => p.id === activeProjectId) || projects[0];
@@ -184,6 +203,26 @@ export default function App() {
       }
     }
   }, [currentProject, activeSceneId]);
+
+  useEffect(() => {
+    const openSharedProject = () => {
+      const sharedProjectId = getSharedProjectId();
+      if (!sharedProjectId) return;
+
+      const sharedProject = projects.find((project) => project.id === sharedProjectId);
+      if (!sharedProject) return;
+
+      setActiveProjectId(sharedProject.id);
+      setActiveSceneId(sharedProject.scenes[0]?.id || '');
+      setIsPasswordUnlocked(false);
+      setPasswordInput('');
+      setPasswordError(false);
+      setViewMode('preview');
+    };
+
+    window.addEventListener('hashchange', openSharedProject);
+    return () => window.removeEventListener('hashchange', openSharedProject);
+  }, [projects]);
 
   // Persist to localStorage
   useEffect(() => {

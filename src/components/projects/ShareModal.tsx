@@ -15,8 +15,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
 
   if (!isOpen) return null;
 
-  const origin = window.location.origin;
-  const shareUrl = `${origin}/#preview-${project.id}`;
+  const shareLocation = new URL('.', document.baseURI);
+  shareLocation.hash = `preview-${encodeURIComponent(project.id)}`;
+  const shareUrl = shareLocation.toString();
   const embedCode = `<iframe src="${shareUrl}" width="100%" height="600" frameborder="0" allowfullscreen allow="gyroscope; accelerometer"></iframe>`;
 
   const handleCopy = (text: string, type: 'link' | 'iframe') => {
