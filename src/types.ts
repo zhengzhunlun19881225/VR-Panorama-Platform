@@ -122,6 +122,24 @@ export interface Scene {
   };
 }
 
+export interface DeviceMetric {
+  label: string;
+  value: string;
+  unit?: string;
+  status?: 'normal' | 'warning' | 'alert';
+}
+
+export interface WaypointDeviceData {
+  deviceName: string;
+  deviceType?: string;
+  deviceCode?: string;
+  status: 'normal' | 'warning' | 'offline';
+  videoUrl?: string;
+  videoTitle?: string;
+  metrics?: DeviceMetric[];
+  lastInspection?: string;
+}
+
 export interface RoamWaypoint {
   id: string;
   sceneId: string;
@@ -133,12 +151,15 @@ export interface RoamWaypoint {
   transitDuration: number; // seconds to transition here
   stayDuration: number;    // seconds to dwell here
   caption?: string;
+  targetHotspotId?: string;
+  deviceData?: WaypointDeviceData;
 }
 
 export interface RoamTour {
   enabled: boolean;
   autoStart: boolean;
   loop: boolean;
+  speed?: number;
   waypoints: RoamWaypoint[];
 }
 

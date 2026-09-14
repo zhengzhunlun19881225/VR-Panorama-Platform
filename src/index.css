@@ -1,1 +1,314 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: dark;
+}
+
+:root.light, [data-theme="light"] {
+  color-scheme: light;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom scrollbars for both light and dark themes */
+.light ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Light mode overrides for all components, dialogs, drawers, and docks */
+html.light,
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+html.light body,
+[data-theme="light"] body,
+html.light #vr-panorama-app-root,
+[data-theme="light"] #vr-panorama-app-root {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Backgrounds in Light Mode */
+html.light .bg-zinc-950,
+[data-theme="light"] .bg-zinc-950 {
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-zinc-950\/95,
+[data-theme="light"] .bg-zinc-950\/95,
+html.light .bg-zinc-950\/90,
+[data-theme="light"] .bg-zinc-950\/90,
+html.light .bg-zinc-950\/85,
+[data-theme="light"] .bg-zinc-950\/85,
+html.light .bg-zinc-950\/80,
+[data-theme="light"] .bg-zinc-950\/80,
+html.light .bg-zinc-950\/70,
+[data-theme="light"] .bg-zinc-950\/70 {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+html.light .bg-zinc-950\/60,
+[data-theme="light"] .bg-zinc-950\/60,
+html.light .bg-zinc-950\/50,
+[data-theme="light"] .bg-zinc-950\/50,
+html.light .bg-zinc-950\/40,
+[data-theme="light"] .bg-zinc-950\/40 {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .bg-zinc-900,
+[data-theme="light"] .bg-zinc-900 {
+  background-color: #ffffff !important;
+}
+
+html.light .bg-zinc-900\/95,
+[data-theme="light"] .bg-zinc-900\/95,
+html.light .bg-zinc-900\/90,
+[data-theme="light"] .bg-zinc-900\/90,
+html.light .bg-zinc-900\/85,
+[data-theme="light"] .bg-zinc-900\/85,
+html.light .bg-zinc-900\/80,
+[data-theme="light"] .bg-zinc-900\/80,
+html.light .bg-zinc-900\/70,
+[data-theme="light"] .bg-zinc-900\/70 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+html.light .bg-zinc-900\/60,
+[data-theme="light"] .bg-zinc-900\/60,
+html.light .bg-zinc-900\/50,
+[data-theme="light"] .bg-zinc-900\/50,
+html.light .bg-zinc-900\/40,
+[data-theme="light"] .bg-zinc-900\/40 {
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-zinc-800,
+[data-theme="light"] .bg-zinc-800 {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .bg-zinc-800\/90,
+[data-theme="light"] .bg-zinc-800\/90,
+html.light .bg-zinc-800\/80,
+[data-theme="light"] .bg-zinc-800\/80,
+html.light .bg-zinc-800\/60,
+[data-theme="light"] .bg-zinc-800\/60,
+html.light .bg-zinc-800\/50,
+[data-theme="light"] .bg-zinc-800\/50,
+html.light .bg-zinc-800\/40,
+[data-theme="light"] .bg-zinc-800\/40 {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .bg-zinc-700,
+[data-theme="light"] .bg-zinc-700 {
+  background-color: #e2e8f0 !important;
+}
+
+/* Hover states in Light Mode */
+html.light .hover\:bg-zinc-800:hover,
+[data-theme="light"] .hover\:bg-zinc-800:hover,
+html.light .hover\:bg-zinc-800\/80:hover,
+[data-theme="light"] .hover\:bg-zinc-800\/80:hover,
+html.light .hover\:bg-zinc-800\/60:hover,
+[data-theme="light"] .hover\:bg-zinc-800\/60:hover {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .hover\:bg-zinc-700:hover,
+[data-theme="light"] .hover\:bg-zinc-700:hover {
+  background-color: #e2e8f0 !important;
+}
+
+html.light .hover\:bg-zinc-900:hover,
+[data-theme="light"] .hover\:bg-zinc-900:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Borders in Light Mode */
+html.light .border-zinc-800,
+[data-theme="light"] .border-zinc-800,
+html.light .border-zinc-800\/80,
+[data-theme="light"] .border-zinc-800\/80,
+html.light .border-zinc-800\/60,
+[data-theme="light"] .border-zinc-800\/60,
+html.light .border-zinc-700,
+[data-theme="light"] .border-zinc-700,
+html.light .border-zinc-700\/80,
+[data-theme="light"] .border-zinc-700\/80,
+html.light .border-zinc-700\/60,
+[data-theme="light"] .border-zinc-700\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .divide-zinc-800,
+[data-theme="light"] .divide-zinc-800,
+html.light .divide-zinc-700,
+[data-theme="light"] .divide-zinc-700,
+html.light .divide-zinc-800\/60,
+[data-theme="light"] .divide-zinc-800\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Texts in Light Mode */
+html.light .text-zinc-100,
+[data-theme="light"] .text-zinc-100,
+html.light .text-zinc-200,
+[data-theme="light"] .text-zinc-200 {
+  color: #0f172a !important;
+}
+
+html.light .text-zinc-300,
+[data-theme="light"] .text-zinc-300 {
+  color: #334155 !important;
+}
+
+html.light .text-zinc-400,
+[data-theme="light"] .text-zinc-400 {
+  color: #64748b !important;
+}
+
+html.light .text-zinc-500,
+[data-theme="light"] .text-zinc-500 {
+  color: #94a3b8 !important;
+}
+
+html.light .text-white,
+[data-theme="light"] .text-white {
+  color: #0f172a;
+}
+
+/* Exception: Buttons with filled accent backgrounds keep white text */
+html.light button.bg-sky-600,
+html.light button.bg-sky-500,
+html.light button.bg-blue-600,
+html.light button.bg-emerald-600,
+html.light button.bg-amber-500,
+html.light button.bg-rose-600,
+[data-theme="light"] button.bg-sky-600,
+[data-theme="light"] button.bg-sky-500,
+[data-theme="light"] button.bg-blue-600,
+[data-theme="light"] button.bg-emerald-600,
+[data-theme="light"] button.bg-amber-500,
+[data-theme="light"] button.bg-rose-600,
+html.light .bg-sky-600 .text-white,
+html.light .bg-sky-500 .text-white,
+html.light .bg-blue-600 .text-white {
+  color: #ffffff !important;
+}
+
+/* Modals & Dialog Cards */
+html.light #share-modal-card,
+html.light #project-basic-info-modal-content,
+html.light #hotspot-modal-card,
+html.light #sandplay-mini-map-container,
+html.light #roam-tour-completed-modal,
+html.light #roam-device-inspect-card,
+[data-theme="light"] #share-modal-card,
+[data-theme="light"] #project-basic-info-modal-content,
+[data-theme="light"] #hotspot-modal-card,
+[data-theme="light"] #sandplay-mini-map-container,
+[data-theme="light"] #roam-tour-completed-modal,
+[data-theme="light"] #roam-device-inspect-card {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Form Inputs & Selects in Light Mode */
+html.light input[type="text"],
+html.light input[type="number"],
+html.light input[type="password"],
+html.light textarea,
+html.light select,
+[data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+html.light select:focus,
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder,
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Drawers & Panels */
+html.light aside#left-scenes-drawer,
+html.light aside#right-property-panel,
+[data-theme="light"] aside#left-scenes-drawer,
+[data-theme="light"] aside#right-property-panel {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Bottom docks & HUD */
+html.light #roam-tour-player-container > div,
+[data-theme="light"] #roam-tour-player-container > div {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.15) !important;
+}
+
+

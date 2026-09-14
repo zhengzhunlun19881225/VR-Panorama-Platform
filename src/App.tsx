@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   VRProject, 
   Scene, 
@@ -6,7 +6,8 @@ import {
   ViewAngle, 
   FloorMap, 
   AssociatedProjectFloor, 
-  RoamWaypoint 
+  RoamWaypoint,
+  RoamTour
 } from './types';
 import { initialProjects } from './data/mockProjects';
 import { PanoramaViewer, PanoramaViewerRef } from './components/viewer/PanoramaViewer';
@@ -20,6 +21,7 @@ import { RightPropertyPanel } from './components/editor/RightPropertyPanel';
 import { ProjectBasicInfoModal } from './components/projects/ProjectBasicInfoModal';
 import { ShareModal } from './components/projects/ShareModal';
 import { generateProceduralEquirectangular } from './utils/panoramaHelper';
+import { ThemeToggle } from './components/common/ThemeToggle';
 import { 
   Eye, 
   Map, 
@@ -28,7 +30,14 @@ import {
   Lock, 
   Check, 
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Layers,
+  ChevronDown,
+  Share2,
+  Play,
+  Pause,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 function normalizeProjects(rawProjects: VRProject[]): VRProject[] {
@@ -86,6 +95,7 @@ export default function App() {
   // Viewer overlays toggles
   const [isSandplayOpen, setIsSandplayOpen] = useState(false);
   const [isRoamTourPlaying, setIsRoamTourPlaying] = useState(false);
+  const [highlightedHotspotId, setHighlightedHotspotId] = useState<string | null>(null);
 
   // Modals
   const [showBasicInfoModal, setShowBasicInfoModal] = useState(false);
@@ -101,8 +111,70 @@ export default function App() {
   // Global Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Preview Mode Scene Selector Dropdown
+  const [showPreviewSceneMenu, setShowPreviewSceneMenu] = useState(false);
+
   // Viewer reference to command camera movement
   const viewerRef = useRef<PanoramaViewerRef>(null);
+
+  // Effective Roam Tour: Uses project's defined roamTour, or dynamically synthesizes one from scenes
+  const effectiveRoamTour: RoamTour = useMemo(() => {
+    if (currentProject?.roamTour && currentProject.roamTour.waypoints && currentProject.roamTour.waypoints.length > 0) {
+      return currentProject.roamTour;
+    }
+    if (!currentProject || currentProject.scenes.length === 0) {
+      return { enabled: true, autoStart: false, loop: true, speed: 1.0, waypoints: [] };
+    }
+    // Dynamic fallback waypoints from all scenes in this project
+    const generated: RoamWaypoint[] = currentProject.scenes.map((sc, idx) => {
+      const inspectHs = sc.hotspots.find(h => h.type !== 'scene_jump') || sc.hotspots[0];
+      return {
+        id: `auto-wp-${sc.id}-${idx}`,
+        sceneId: sc.id,
+        title: `${sc.name} · 全景点位`,
+        yaw: inspectHs ? inspectHs.position.yaw : sc.initialView.yaw,
+        pitch: inspectHs ? inspectHs.position.pitch : sc.initialView.pitch,
+        fov: sc.initialView.fov,
+        view: {
+          yaw: inspectHs ? inspectHs.position.yaw : sc.initialView.yaw,
+          pitch: inspectHs ? inspectHs.position.pitch : sc.initialView.pitch,
+          fov: sc.initialView.fov,
+        },
+        transitDuration: 1.8,
+        stayDuration: 4.0,
+        caption: `正在自动导览至：${sc.name}，自动巡检热点与全景视角。`,
+        targetHotspotId: inspectHs?.id,
+        deviceData: inspectHs ? {
+          deviceName: `${sc.name} - 智能感知监测站`,
+          deviceCode: `SYS-${sc.id.slice(-4).toUpperCase()}`,
+          status: 'normal',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          videoTitle: `${sc.name} 现场运行视讯`,
+          metrics: [
+            { label: '系统状态', value: '正常运行', unit: '', status: 'normal' },
+            { label: '全景视角', value: `${Math.round(inspectHs.position.yaw)}°`, unit: '', status: 'normal' },
+            { label: '监测热点', value: `${sc.hotspots.length}`, unit: '个', status: 'normal' },
+            { label: '数据传输', value: '1.2', unit: 'Gbps', status: 'normal' },
+          ]
+        } : undefined
+      };
+    });
+    return {
+      enabled: true,
+      autoStart: false,
+      loop: true,
+      speed: 1.0,
+      waypoints: generated,
+    };
+  }, [currentProject]);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   // Sync activeSceneId when project changes
   useEffect(() => {
@@ -538,7 +610,11 @@ export default function App() {
     );
   };
 
-  const handleWaypointTrigger = (wp: RoamWaypoint) => {
+  const handleWaypointTrigger = (
+    wp: RoamWaypoint,
+    transitDurationSec: number = 1.2,
+    onTransitComplete?: () => void
+  ) => {
     const targetYaw = Number.isFinite(wp.yaw)
       ? wp.yaw!
       : Number.isFinite(wp.view?.yaw)
@@ -559,10 +635,24 @@ export default function App() {
       setActiveSceneId(wp.sceneId);
       // Allow the new scene to mount and update before triggering smooth view transition
       setTimeout(() => {
-        viewerRef.current?.setView(targetYaw, targetPitch, targetFov, true);
-      }, 80);
+        viewerRef.current?.setView(
+          targetYaw, 
+          targetPitch, 
+          targetFov, 
+          true, 
+          transitDurationSec, 
+          onTransitComplete
+        );
+      }, 120);
     } else {
-      viewerRef.current?.setView(targetYaw, targetPitch, targetFov, true);
+      viewerRef.current?.setView(
+        targetYaw, 
+        targetPitch, 
+        targetFov, 
+        true, 
+        transitDurationSec, 
+        onTransitComplete
+      );
     }
   };
 
@@ -594,11 +684,11 @@ export default function App() {
   };
 
   return (
-    <div id="vr-panorama-app-root" className="h-screen w-screen bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden font-sans">
+    <div id="vr-panorama-app-root" className="h-screen w-screen bg-slate-50 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100 flex flex-col overflow-hidden font-sans transition-colors duration-200">
       {/* GLOBAL TOAST */}
       {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 border border-zinc-700 shadow-2xl px-4 py-2 rounded-xl text-xs text-zinc-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-3">
-          <Check className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 shadow-2xl px-4 py-2 rounded-xl text-xs text-slate-900 dark:text-zinc-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-3">
+          <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -615,6 +705,10 @@ export default function App() {
             setActiveProjectId(pid);
             setIsPasswordUnlocked(false);
             setViewMode('preview');
+            const targetProj = projects.find((p) => p.id === pid);
+            if (targetProj?.roamTour?.autoStart) {
+              setIsRoamTourPlaying(true);
+            }
           }}
           onDuplicateProject={handleDuplicateProject}
           onArchiveProject={handleArchiveProject}
@@ -640,7 +734,12 @@ export default function App() {
               project={currentProject}
               currentScene={currentScene}
               isPreviewMode={false}
-              onTogglePreviewMode={() => setViewMode('preview')}
+              onTogglePreviewMode={() => {
+                setViewMode('preview');
+                if (currentProject.roamTour?.autoStart) {
+                  setIsRoamTourPlaying(true);
+                }
+              }}
               onBackToList={() => setViewMode('list')}
               onSelectScene={(scId) => setActiveSceneId(scId)}
               onOpenBasicInfo={() => {
@@ -667,20 +766,158 @@ export default function App() {
                 );
                 showToast('项目所有场景与全景热点配置已成功保存！');
               }}
+              isRoamTourPlaying={isRoamTourPlaying}
+              onToggleRoamTour={() => {
+                const next = !isRoamTourPlaying;
+                setIsRoamTourPlaying(next);
+                if (!next) setHighlightedHotspotId(null);
+                showToast(next ? '开启全景自动漫游导览' : '暂停漫游路线');
+              }}
             />
           ) : (
             /* Immersive Preview Top Bar */
-            <div className="absolute top-4 left-4 z-40 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setViewMode('editor')}
-                className="px-3 py-1.5 bg-zinc-900/90 hover:bg-zinc-800 text-white backdrop-blur-md rounded-xl text-xs font-medium border border-zinc-700/80 flex items-center gap-1.5 shadow-xl transition-all"
-              >
-                <ArrowLeft className="w-4 h-4 text-sky-400" />
-                <span>返回编辑</span>
-              </button>
-              <div className="bg-zinc-900/90 text-white backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-700/80 text-xs font-semibold">
-                {currentProject.name} · {currentScene.name}
+            <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-2 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('editor')}
+                  className="px-3 py-1.5 bg-white/90 dark:bg-zinc-900/90 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-white backdrop-blur-md rounded-xl text-xs font-medium border border-slate-200/80 dark:border-zinc-700/80 flex items-center gap-1.5 shadow-xl transition-all"
+                >
+                  <ArrowLeft className="w-4 h-4 text-sky-500" />
+                  <span>返回编辑</span>
+                </button>
+
+                {/* Project Title & Scene Selector Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowPreviewSceneMenu(!showPreviewSceneMenu)}
+                    className="bg-white/90 hover:bg-white dark:bg-zinc-900/90 dark:hover:bg-zinc-800 text-slate-800 dark:text-white backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 text-xs font-semibold shadow-xl flex items-center gap-2 transition-all"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-sky-500" />
+                    <span className="max-w-[130px] sm:max-w-[200px] truncate">{currentProject.name} · {currentScene.name}</span>
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
+                  </button>
+
+                  {showPreviewSceneMenu && (
+                    <div className="absolute left-0 top-full mt-1.5 w-60 bg-white border border-slate-200 dark:bg-zinc-900 dark:border-zinc-700 rounded-xl shadow-2xl py-1.5 z-50 text-xs animate-in zoom-in-95 duration-150">
+                      <div className="px-3 py-1 text-[10px] text-slate-400 dark:text-zinc-500 font-semibold uppercase">切换漫游场景</div>
+                      {currentProject.scenes.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveSceneId(s.id);
+                            setShowPreviewSceneMenu(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${
+                            s.id === currentScene.id
+                              ? 'bg-sky-50 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300 font-medium'
+                              : 'text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                          }`}
+                        >
+                          <span className="truncate">{s.name}</span>
+                          <span className="text-[10px] text-slate-400 dark:text-zinc-500">{s.hotspots.length}热点</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Preview Action Tools */}
+              <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
+                {/* 1. Roam Tour Toggle Button */}
+                <button
+                  id="btn-preview-roam-tour"
+                  type="button"
+                  onClick={() => {
+                    const nextPlaying = !isRoamTourPlaying;
+                    setIsRoamTourPlaying(nextPlaying);
+                    if (!nextPlaying) {
+                      setHighlightedHotspotId(null);
+                    }
+                    showToast(nextPlaying ? '已启动 360° 全景自动漫游导览' : '已暂停自动漫游导览');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-xl ${
+                    isRoamTourPlaying
+                      ? 'bg-gradient-to-r from-indigo-600 to-sky-600 text-white border-indigo-400 shadow-indigo-500/30 ring-2 ring-indigo-400/40 font-semibold'
+                      : 'bg-white/95 hover:bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700/80'
+                  }`}
+                  title="开启/关闭全景自动漫游路线"
+                >
+                  <Route className={`w-4 h-4 ${isRoamTourPlaying ? 'text-amber-300 animate-pulse' : 'text-indigo-500 dark:text-indigo-400'}`} />
+                  <span>{isRoamTourPlaying ? '漫游中' : '自动漫游'}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isRoamTourPlaying
+                      ? 'bg-white/20 text-white'
+                      : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300'
+                  }`}>
+                    {effectiveRoamTour.waypoints.length}点
+                  </span>
+                </button>
+
+                {/* 2. Sandplay Map Toggle */}
+                {currentProject.floorMaps && currentProject.floorMaps.length > 0 && (
+                  <button
+                    id="btn-preview-sandplay"
+                    type="button"
+                    onClick={() => setIsSandplayOpen(!isSandplayOpen)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-xl ${
+                      isSandplayOpen
+                        ? 'bg-sky-500 text-white border-sky-400 shadow-sky-500/30'
+                        : 'bg-white/95 hover:bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700/80'
+                    }`}
+                    title="打开/收起平面沙盘地图"
+                  >
+                    <Map className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+                    <span className="hidden sm:inline">沙盘地图</span>
+                  </button>
+                )}
+
+                {/* 3. Little Planet Effect */}
+                <button
+                  id="btn-preview-little-planet"
+                  type="button"
+                  onClick={() => {
+                    viewerRef.current?.triggerLittlePlanet();
+                    showToast('正在播放开场小行星缩放');
+                  }}
+                  className="px-2.5 py-1.5 bg-white/95 hover:bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700/80 backdrop-blur-md rounded-xl text-xs font-medium border shadow-xl flex items-center gap-1.5 transition-all"
+                  title="播放开场小行星视角动效"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="hidden md:inline">小行星</span>
+                </button>
+
+                {/* 4. Share button */}
+                <button
+                  id="btn-preview-share"
+                  type="button"
+                  onClick={() => {
+                    setShareTargetProject(currentProject);
+                    setShowShareModal(true);
+                  }}
+                  className="px-2.5 py-1.5 bg-white/95 hover:bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700/80 backdrop-blur-md rounded-xl text-xs font-medium border shadow-xl flex items-center gap-1.5 transition-all"
+                  title="分享项目与生成二维码"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="hidden md:inline">分享</span>
+                </button>
+
+                {/* 5. Fullscreen toggle */}
+                <button
+                  id="btn-preview-fullscreen"
+                  type="button"
+                  onClick={toggleFullscreen}
+                  className="px-2 py-1.5 bg-white/95 hover:bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 dark:bg-zinc-900/90 dark:hover:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700/80 backdrop-blur-md rounded-xl text-xs font-medium border shadow-xl flex items-center gap-1 transition-all"
+                  title="切换全屏沉浸显示"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+
+                {/* 6. Theme toggle */}
+                <ThemeToggle id="btn-preview-theme-toggle" />
               </div>
             </div>
           )}
@@ -743,6 +980,7 @@ export default function App() {
                     allScenes={currentProject.scenes}
                     isEditorMode={viewMode === 'editor'}
                     selectedHotspotId={selectedHotspot?.id}
+                    highlightHotspotId={highlightedHotspotId}
                     onSelectHotspot={(hs) => setSelectedHotspot(hs)}
                     onSceneJump={(targetSceneId, landingView) => {
                       setActiveSceneId(targetSceneId);
@@ -757,40 +995,46 @@ export default function App() {
                     onCanvasClickForHotspot={handleCanvasClickPlaceHotspot}
                   />
 
-                  {/* Viewer Overlay Controls: Sandplay Map Toggle & Roam Tour Toggle */}
-                  <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-                    {/* Sandplay Map Toggle Button */}
-                    <button
-                      id="btn-toggle-sandplay"
-                      type="button"
-                      onClick={() => setIsSandplayOpen(!isSandplayOpen)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-lg ${
-                        isSandplayOpen
-                          ? 'bg-sky-500 text-white border-sky-400'
-                          : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 border-zinc-700/80'
-                      }`}
-                      title="打开/收起平面沙盘地图"
-                    >
-                      <Map className="w-4 h-4 text-sky-400" />
-                      <span>沙盘地图</span>
-                    </button>
+                  {/* Viewer Overlay Controls (Only shown in Editor Mode to prevent overlap with Preview Bar) */}
+                  {viewMode === 'editor' && (
+                    <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                      {/* Sandplay Map Toggle Button */}
+                      <button
+                        id="btn-toggle-sandplay"
+                        type="button"
+                        onClick={() => setIsSandplayOpen(!isSandplayOpen)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-lg ${
+                          isSandplayOpen
+                            ? 'bg-sky-500 text-white border-sky-400'
+                            : 'bg-white/90 hover:bg-white text-slate-700 border-slate-200 dark:bg-zinc-900/80 dark:hover:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700/80'
+                        }`}
+                        title="打开/收起平面沙盘地图"
+                      >
+                        <Map className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+                        <span>沙盘地图</span>
+                      </button>
 
-                    {/* Roam Tour Controller Toggle Button */}
-                    <button
-                      id="btn-toggle-roam-tour"
-                      type="button"
-                      onClick={() => setIsRoamTourPlaying(!isRoamTourPlaying)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-lg ${
-                        isRoamTourPlaying
-                          ? 'bg-indigo-600 text-white border-indigo-400'
-                          : 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 border-zinc-700/80'
-                      }`}
-                      title="开启/关闭自动漫游路线"
-                    >
-                      <Route className="w-4 h-4 text-indigo-400" />
-                      <span>漫游路线</span>
-                    </button>
-                  </div>
+                      {/* Roam Tour Controller Toggle Button */}
+                      <button
+                        id="btn-toggle-roam-tour"
+                        type="button"
+                        onClick={() => {
+                          const next = !isRoamTourPlaying;
+                          setIsRoamTourPlaying(next);
+                          if (!next) setHighlightedHotspotId(null);
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md border transition-all flex items-center gap-1.5 shadow-lg ${
+                          isRoamTourPlaying
+                            ? 'bg-indigo-600 text-white border-indigo-400 shadow-indigo-500/30'
+                            : 'bg-white/90 hover:bg-white text-slate-700 border-slate-200 dark:bg-zinc-900/80 dark:hover:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700/80'
+                        }`}
+                        title="开启/关闭自动漫游路线"
+                      >
+                        <Route className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                        <span>漫游路线</span>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Sandplay 2D Interactive Floor Plan */}
                   {isSandplayOpen && currentProject.floorMaps && currentProject.floorMaps.length > 0 && (
@@ -808,15 +1052,89 @@ export default function App() {
                       onJumpToScene={(scId) => setActiveSceneId(scId)}
                       associatedFloors={currentProject.associatedFloors}
                       onSelectAssociatedFloor={handleSelectAssociatedFloor}
+                      onClose={() => setIsSandplayOpen(false)}
                     />
                   )}
 
-                  {/* Roam Tour Player Bar */}
-                  {isRoamTourPlaying && currentProject.roamTour && (
+                  {/* Quick Roam Start Dock in Preview Mode when not yet playing */}
+                  {viewMode === 'preview' && !isRoamTourPlaying && !isLockedByPassword && effectiveRoamTour.waypoints.length > 0 && (
+                    <div
+                      id="preview-quick-roam-dock"
+                      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-indigo-500/30 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 shadow-2xl flex items-center gap-3 sm:gap-4 text-xs animate-in slide-in-from-bottom-4 duration-300 max-w-lg w-[92%] sm:w-auto"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/30 shrink-0">
+                          <Route className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                            <span>开启全景自动漫游导览</span>
+                            <span className="text-[10px] px-1.5 py-0.2 bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 rounded font-mono shrink-0">
+                              {effectiveRoamTour.waypoints.length}个巡检点
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                            自动环视旋转、对焦设备热点与实时监控视频展示
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        id="btn-quick-start-preview-roam"
+                        type="button"
+                        onClick={() => {
+                          setIsRoamTourPlaying(true);
+                          showToast('已启动 360° 全景自动漫游路线导览');
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 shrink-0"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>开始漫游</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Roam Tour Player Bar (Available in both Editor & Preview mode) */}
+                  {isRoamTourPlaying && effectiveRoamTour && effectiveRoamTour.waypoints.length > 0 && (
                     <RoamTourBar
-                      roamTour={currentProject.roamTour}
-                      onWaypointTrigger={handleWaypointTrigger}
-                      onCloseTour={() => setIsRoamTourPlaying(false)}
+                      roamTour={effectiveRoamTour}
+                      allScenes={currentProject.scenes}
+                      currentSceneId={currentScene.id}
+                      onRotateView={(deltaYaw, durationSec, onComplete) => {
+                        viewerRef.current?.rotateView(deltaYaw, durationSec, onComplete);
+                      }}
+                      onPanView={(targetYaw, targetPitch, targetFov, durationSec, onComplete) => {
+                        viewerRef.current?.setView(targetYaw, targetPitch, targetFov, true, durationSec, onComplete);
+                      }}
+                      onJumpScene={(targetSceneId, onReady) => {
+                        setActiveSceneId(targetSceneId);
+                        setTimeout(() => {
+                          onReady?.();
+                        }, 260);
+                      }}
+                      onPauseTransition={() => {
+                        viewerRef.current?.pauseTransition();
+                      }}
+                      onResumeTransition={() => {
+                        viewerRef.current?.resumeTransition();
+                      }}
+                      onStopTransition={() => {
+                        viewerRef.current?.stopTransition();
+                      }}
+                      onCloseTour={() => {
+                        setIsRoamTourPlaying(false);
+                        setHighlightedHotspotId(null);
+                        showToast('已退出自动漫游导览');
+                      }}
+                      onOpenHotspotModal={(hs) => setActiveModalHotspot(hs)}
+                      onHighlightHotspot={(hsId) => {
+                        setHighlightedHotspotId(hsId);
+                        if (!hsId) {
+                          setSelectedHotspot(null);
+                        } else {
+                          const targetHs = currentScene.hotspots.find((h) => h.id === hsId);
+                          if (targetHs) setSelectedHotspot(targetHs);
+                        }
+                      }}
                     />
                   )}
                 </>

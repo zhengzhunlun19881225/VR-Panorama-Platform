@@ -70,55 +70,112 @@ export const INITIAL_PROJECTS: VRProject[] = [
     roamTour: {
       enabled: true,
       autoStart: false,
-      loop: true,
+      loop: false,
+      speed: 1.0,
       waypoints: [
         {
           id: 'wp-1',
           sceneId: 'scene-tech-1f',
-          title: '一楼迎宾入口俯瞰',
-          yaw: 0,
-          pitch: -10,
+          title: '1F 穹顶科技大堂 - 光伏调光机组',
+          yaw: -15,
+          pitch: 20,
           fov: 75,
-          view: { yaw: 0, pitch: -10, fov: 75 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '欢迎来到未来科技总部大厦！中庭挑高28米，采光顶由680块光伏玻璃构成。'
+          view: { yaw: -15, pitch: 20, fov: 75 },
+          transitDuration: 1.6,
+          stayDuration: 3.5,
+          caption: '欢迎来到未来科技总部大厦！1F中庭挑高28米，采光顶布置光电自适应调光机组。',
+          targetHotspotId: 'hs-info-arch',
+          deviceData: {
+            deviceName: '1F 仿生中庭光电幕墙与自适应遮阳机组',
+            deviceCode: 'IOT-SOLAR-01',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            videoTitle: '中庭自适应遮阳与微电网运行监控',
+            metrics: [
+              { label: '实时光伏发电', value: '148.6', unit: 'kW', status: 'normal' },
+              { label: '穹顶透光率', value: '62.5', unit: '%', status: 'normal' },
+              { label: '室内照度', value: '12,400', unit: 'Lux', status: 'normal' },
+              { label: '年节能减碳', value: '820.4', unit: 't/年', status: 'normal' }
+            ]
+          }
         },
         {
           id: 'wp-2',
           sceneId: 'scene-tech-2f',
-          title: '二楼数字全息展区',
-          yaw: 45,
-          pitch: 5,
+          title: '2F 数字展厅 - AI空间算力集群',
+          yaw: 35,
+          pitch: 2,
           fov: 70,
-          view: { yaw: 45, pitch: 5, fov: 70 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '2F数字展厅：配备环幕交互装置与AI空间计算中心。'
+          view: { yaw: 35, pitch: 2, fov: 70 },
+          transitDuration: 1.6,
+          stayDuration: 3.5,
+          caption: '2F数字展厅：配备环幕交互装置与AI空间计算中心，实时渲染全沉浸孪生视界。',
+          targetHotspotId: 'hs-2f-ai',
+          deviceData: {
+            deviceName: '2F AI空间计算与环幕渲染集群',
+            deviceCode: 'GPU-SRV-804',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            videoTitle: 'AI边缘算力节点实况监控画面',
+            metrics: [
+              { label: 'GPU渲染负载', value: '64.2', unit: '%', status: 'normal' },
+              { label: '核心温度', value: '42.8', unit: '°C', status: 'normal' },
+              { label: '算力输出', value: '180.5', unit: 'TFLOPS', status: 'normal' },
+              { label: '骨干光纤时延', value: '0.9', unit: 'ms', status: 'normal' }
+            ]
+          }
         },
         {
           id: 'wp-3',
           sceneId: 'scene-tech-3f',
-          title: '三楼VIP云端会议室',
-          yaw: -60,
-          pitch: 0,
-          fov: 65,
-          view: { yaw: -60, pitch: 0, fov: 65 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '3F云端全景会议室，具备270°高空天际线景观与全套智能协作硬件。'
+          title: '3F VIP云端全景会议终端',
+          yaw: -55,
+          pitch: -2,
+          fov: 68,
+          view: { yaw: -55, pitch: -2, fov: 68 },
+          transitDuration: 1.6,
+          stayDuration: 3.5,
+          caption: '3F云端全景会议室，具备270°高空天际线景观与全套智能协作硬件。',
+          targetHotspotId: 'hs-3f-conf',
+          deviceData: {
+            deviceName: '3F VIP云端全景协作超清视讯中枢',
+            deviceCode: 'AV-CENTRAL-302',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            videoTitle: '云端协作视讯会议终端运行监控',
+            metrics: [
+              { label: '视讯通道', value: '8K HDR', unit: '', status: 'normal' },
+              { label: '波束麦克风', value: '32通道', unit: '', status: 'normal' },
+              { label: '主屏刷新率', value: '144', unit: 'Hz', status: 'normal' },
+              { label: '待机能耗', value: '0.35', unit: 'kW', status: 'normal' }
+            ]
+          }
         },
         {
           id: 'wp-4',
           sceneId: 'scene-tech-4f',
-          title: '顶层天台花园全景',
-          yaw: 120,
-          pitch: 15,
-          fov: 80,
-          view: { yaw: 120, pitch: 15, fov: 80 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '4F天台空中花园，园区绿化覆盖率超45%，是员工放松与商务沙龙的理想之选。'
+          title: '4F 顶层星空天台 - 微气象观测基站',
+          yaw: 110,
+          pitch: 10,
+          fov: 78,
+          view: { yaw: 110, pitch: 10, fov: 78 },
+          transitDuration: 1.6,
+          stayDuration: 3.5,
+          caption: '4F天台空中花园，配备微气象与生态雨水灌溉基站，园区绿化覆盖率超45%。',
+          targetHotspotId: 'hs-4f-garden',
+          deviceData: {
+            deviceName: '4F 顶层微气象观测与生态微灌基站',
+            deviceCode: 'ENV-STATION-401',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            videoTitle: '天台微气象与绿色生态基站现场监控',
+            metrics: [
+              { label: '环境风速', value: '2.4', unit: 'm/s', status: 'normal' },
+              { label: '空气质量', value: 'AQI 18', unit: '(优)', status: 'normal' },
+              { label: '温湿度', value: '23.6°C / 54%', unit: '', status: 'normal' },
+              { label: '雨水循环率', value: '89.2', unit: '%', status: 'normal' }
+            ]
+          }
         }
       ]
     },
@@ -456,9 +513,23 @@ export const INITIAL_PROJECTS: VRProject[] = [
           pitch: 0,
           fov: 75,
           view: { yaw: 0, pitch: 0, fov: 75 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '挑空客厅层高 7.2 米，全景无框玻璃幕墙直面浩瀚海景。'
+          transitDuration: 1.8,
+          stayDuration: 4.0,
+          caption: '挑空客厅层高 7.2 米，全景无框玻璃幕墙直面浩瀚海景。',
+          targetHotspotId: 'hs-v-phone',
+          deviceData: {
+            deviceName: '智能全屋微气候与安防中枢',
+            deviceCode: 'IOT-VILLA-LIV-01',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            videoTitle: '客厅全景高清监控机位',
+            metrics: [
+              { label: '室内温度', value: '23.6', unit: '°C', status: 'normal' },
+              { label: '空气湿度', value: '48.2', unit: '%', status: 'normal' },
+              { label: '新风风速', value: '1.8', unit: 'm/s', status: 'normal' },
+              { label: 'PM2.5', value: '12', unit: 'μg/m³', status: 'normal' }
+            ]
+          }
         },
         {
           id: 'wp-v2',
@@ -468,9 +539,23 @@ export const INITIAL_PROJECTS: VRProject[] = [
           pitch: -10,
           fov: 70,
           view: { yaw: 60, pitch: -10, fov: 70 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '泳池长 25 米，与远方海平面连为一体，傍晚可观赏绝美海上落日。'
+          transitDuration: 2.0,
+          stayDuration: 4.0,
+          caption: '泳池长 25 米，与远方海平面连为一体，配备全自动循环杀菌与恒温热泵。',
+          targetHotspotId: 'hs-pool-living',
+          deviceData: {
+            deviceName: '户外恒温无边际泳池水质系统',
+            deviceCode: 'POOL-CTRL-2000',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            videoTitle: '泳池水质与回水实时监控',
+            metrics: [
+              { label: '泳池水温', value: '28.4', unit: '°C', status: 'normal' },
+              { label: '余氯浓度', value: '0.8', unit: 'mg/L', status: 'normal' },
+              { label: '酸碱PH值', value: '7.3', unit: '', status: 'normal' },
+              { label: '水循环量', value: '45.2', unit: 'm³/h', status: 'normal' }
+            ]
+          }
         },
         {
           id: 'wp-v3',
@@ -480,9 +565,22 @@ export const INITIAL_PROJECTS: VRProject[] = [
           pitch: -5,
           fov: 75,
           view: { yaw: -45, pitch: -5, fov: 75 },
-          transitDuration: 0.8,
-          stayDuration: 1.2,
-          caption: '中岛台配备嘉格纳顶级嵌入式厨电，享受烹饪与社交的艺术融合。'
+          transitDuration: 1.8,
+          stayDuration: 4.0,
+          caption: '中岛台配备嘉格纳顶级嵌入式厨电，享受烹饪与社交的艺术融合。',
+          deviceData: {
+            deviceName: '德系高端智慧厨房能源感知站',
+            deviceCode: 'KITCHEN-SMART-9',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            videoTitle: '烹饪中岛与厨房安防视讯',
+            metrics: [
+              { label: '燃气安全', value: '0.00', unit: '%LEL', status: 'normal' },
+              { label: '排烟负压', value: '820', unit: 'Pa', status: 'normal' },
+              { label: '净水TDS', value: '18', unit: 'ppm', status: 'normal' },
+              { label: '瞬时用电', value: '1.65', unit: 'kW', status: 'normal' }
+            ]
+          }
         }
       ]
     },
@@ -653,7 +751,7 @@ export const INITIAL_PROJECTS: VRProject[] = [
     roamTour: {
       enabled: true,
       autoStart: false,
-      loop: false,
+      loop: true,
       waypoints: [
         {
           id: 'wp-m1',
@@ -663,9 +761,49 @@ export const INITIAL_PROJECTS: VRProject[] = [
           pitch: 0,
           fov: 70,
           view: { yaw: 0, pitch: 0, fov: 70 },
-          transitDuration: 3,
-          stayDuration: 5,
-          caption: '太和殿内共有金砖四千七百一十八块，质地坚细，敲之有金石之声。'
+          transitDuration: 2.2,
+          stayDuration: 4.5,
+          caption: '太和殿内共有金砖四千七百一十八块，质地坚细，敲之有金石之声。',
+          targetHotspotId: 'hs-m-garden',
+          deviceData: {
+            deviceName: '故宫珍贵木构微环境监测终端',
+            deviceCode: 'PALACE-ENV-THD-01',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            videoTitle: '太和殿正殿中轴数字监测画面',
+            metrics: [
+              { label: '微环境恒温', value: '20.5', unit: '°C', status: 'normal' },
+              { label: '相对湿度', value: '45.0', unit: '%', status: 'normal' },
+              { label: '光照强度', value: '48', unit: 'Lux', status: 'normal' },
+              { label: '微震动感应', value: '0.02', unit: 'gal', status: 'normal' }
+            ]
+          }
+        },
+        {
+          id: 'wp-m2',
+          sceneId: 'scene-museum-garden',
+          title: '御花园古韵芳华',
+          yaw: 45,
+          pitch: 0,
+          fov: 75,
+          view: { yaw: 45, pitch: 0, fov: 75 },
+          transitDuration: 2.0,
+          stayDuration: 4.5,
+          caption: '御花园始建于明永乐十八年，承载着皇家园林叠石理水与古树名木的生态历史。',
+          targetHotspotId: 'hs-garden-hall',
+          deviceData: {
+            deviceName: '紫禁城古树名木健康微遥感站',
+            deviceCode: 'GARDEN-TREE-MONITOR',
+            status: 'normal',
+            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            videoTitle: '御花园万春亭全景实时巡检',
+            metrics: [
+              { label: '土壤墒情', value: '62.4', unit: '%', status: 'normal' },
+              { label: '紫外辐射', value: '0.4', unit: 'UV', status: 'normal' },
+              { label: '古树活力度', value: '98.5', unit: '分', status: 'normal' },
+              { label: '空气负氧离子', value: '2400', unit: '/cm³', status: 'normal' }
+            ]
+          }
         }
       ]
     },

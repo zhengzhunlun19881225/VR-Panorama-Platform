@@ -182,17 +182,17 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
   return (
     <aside
       id="right-property-panel"
-      className="w-80 sm:w-96 bg-zinc-900 border-l border-zinc-800 flex flex-col h-full shrink-0 z-30 select-none overflow-hidden"
+      className="w-80 sm:w-96 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col h-full shrink-0 z-30 select-none overflow-hidden text-slate-800 dark:text-zinc-100"
     >
       {/* Header Tabs */}
-      <div className="flex border-b border-zinc-800 bg-zinc-950/50 p-1 gap-1">
+      <div className="flex border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/50 p-1 gap-1">
         <button
           type="button"
           onClick={() => setActiveTab('view')}
           className={`flex-1 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
             activeTab === 'view'
-              ? 'bg-zinc-800 text-sky-400 shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400 font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           <Eye className="w-3.5 h-3.5" />
@@ -204,14 +204,14 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
           onClick={() => setActiveTab('hotspots')}
           className={`flex-1 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all relative ${
             activeTab === 'hotspots'
-              ? 'bg-zinc-800 text-sky-400 shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400 font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
           <span>热点管理</span>
           {scene.hotspots.length > 0 && (
-            <span className="text-[10px] bg-sky-500/20 text-sky-300 px-1.5 py-0.2 rounded-full">
+            <span className="text-[10px] bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 px-1.5 py-0.2 rounded-full">
               {scene.hotspots.length}
             </span>
           )}
@@ -222,8 +222,8 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
           onClick={() => setActiveTab('roam')}
           className={`flex-1 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
             activeTab === 'roam'
-              ? 'bg-zinc-800 text-sky-400 shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400 font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           <Route className="w-3.5 h-3.5" />
@@ -235,8 +235,8 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
           onClick={() => setActiveTab('tiles')}
           className={`flex-1 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
             activeTab === 'tiles'
-              ? 'bg-zinc-800 text-sky-400 shadow-sm'
-              : 'text-zinc-400 hover:text-zinc-200'
+              ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400 font-semibold'
+              : 'text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -1132,17 +1132,49 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
         {/* ================= TAB 3: 漫游导览 ================= */}
         {activeTab === 'roam' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-zinc-950/50 rounded-xl border border-zinc-800">
-              <div>
-                <div className="font-semibold text-zinc-200">自动漫游路线模式</div>
-                <div className="text-[10px] text-zinc-500">按预设轨迹自动切换场景与镜头视线</div>
+            <div className="space-y-2 p-3 bg-zinc-950/50 rounded-xl border border-zinc-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-zinc-200">自动漫游路线模式</div>
+                  <div className="text-[10px] text-zinc-500">按预设轨迹自动切换场景与镜头视线</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={roamTour.enabled}
+                  onChange={(e) => onUpdateRoamTour({ enabled: e.target.checked })}
+                  className="w-4 h-4 rounded accent-sky-500 cursor-pointer"
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={roamTour.enabled}
-                onChange={(e) => onUpdateRoamTour({ enabled: e.target.checked })}
-                className="w-4 h-4 rounded accent-sky-500 cursor-pointer"
-              />
+
+              <div className="pt-2 border-t border-zinc-850 flex items-center justify-between text-xs">
+                <span className="text-zinc-400 text-[11px]">循环路线漫游 (Loop)</span>
+                <input
+                  type="checkbox"
+                  checked={roamTour.loop || false}
+                  onChange={(e) => onUpdateRoamTour({ loop: e.target.checked })}
+                  className="w-3.5 h-3.5 rounded accent-sky-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-zinc-850 flex items-center justify-between text-xs">
+                <span className="text-zinc-400 text-[11px]">漫游播放速率</span>
+                <div className="flex items-center gap-1 bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
+                  {[0.5, 1.0, 1.5, 2.0].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => onUpdateRoamTour({ speed: s })}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${
+                        (roamTour.speed || 1.0) === s
+                          ? 'bg-sky-500 text-white font-semibold'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      {s}x
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <button
@@ -1220,13 +1252,19 @@ export const RightPropertyPanel: React.FC<RightPropertyPanelProps> = ({
                         </div>
                       </div>
 
-                      <div className="text-[10px] text-zinc-400 flex items-center gap-2">
+                      <div className="text-[10px] text-zinc-400 flex flex-wrap items-center gap-2">
                         <span className="bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-300">
                           {targetScene?.name || '未知场景'}
                         </span>
                         <span>
-                          {wp.transitDuration}秒过渡 + {wp.stayDuration}秒停留
+                          {wp.transitDuration}s平移 + {wp.stayDuration}s停留
                         </span>
+                        {wp.deviceData && (
+                          <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>含设备指标 / 监控视频</span>
+                          </span>
+                        )}
                       </div>
 
                       {wp.caption && (

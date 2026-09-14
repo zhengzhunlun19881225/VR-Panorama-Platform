@@ -51,28 +51,28 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
       id="sandplay-mini-map-container"
       className={`fixed z-30 transition-all duration-300 pointer-events-auto ${
         isExpanded
-          ? 'inset-6 sm:inset-12 bg-zinc-900/95 backdrop-blur-md rounded-2xl border border-zinc-700 shadow-2xl flex flex-col p-4'
-          : 'bottom-20 right-5 w-60 sm:w-72 bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-xl overflow-hidden'
+          ? 'inset-6 sm:inset-12 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl border border-slate-300 dark:border-zinc-700 shadow-2xl flex flex-col p-4 text-slate-800 dark:text-zinc-100'
+          : 'bottom-20 right-5 w-60 sm:w-72 bg-white/90 dark:bg-zinc-900/85 backdrop-blur-md rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden text-slate-800 dark:text-zinc-100'
       }`}
     >
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800/80 bg-zinc-900/90 select-none">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-zinc-800/80 bg-slate-50 dark:bg-zinc-900/90 select-none">
         <div className="relative">
           <button
             id="btn-sandplay-floor-dropdown"
             type="button"
             onClick={() => setShowFloorDropdown(!showFloorDropdown)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-zinc-100 hover:text-sky-400 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-zinc-100 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
           >
-            <Layers className="w-3.5 h-3.5 text-sky-400" />
+            <Layers className="w-3.5 h-3.5 text-sky-500" />
             <span>{activeFloor.name}</span>
-            <ChevronDown className="w-3 h-3 text-zinc-400" />
+            <ChevronDown className="w-3 h-3 text-slate-400 dark:text-zinc-400" />
           </button>
 
           {/* Floor Selection Popover */}
           {showFloorDropdown && (
-            <div className="absolute left-0 top-full mt-1.5 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
-              <div className="px-3 py-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+            <div className="absolute left-0 top-full mt-1.5 w-56 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-2xl py-1.5 z-40 text-xs">
+              <div className="px-3 py-1 text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                 当前项目楼层
               </div>
               {floorMaps.map((floor) => (
@@ -85,12 +85,12 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
                   }}
                   className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
                     floor.id === activeFloor.id
-                      ? 'bg-sky-500/20 text-sky-300 font-medium'
-                      : 'text-zinc-300 hover:bg-zinc-800'
+                      ? 'bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-300 font-medium'
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
                   }`}
                 >
                   <span>{floor.name}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400">
                     {floor.level > 0 ? `${floor.level}F` : `B${Math.abs(floor.level)}`}
                   </span>
                 </button>
@@ -98,7 +98,7 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
 
               {associatedFloors.length > 0 && (
                 <>
-                  <div className="border-t border-zinc-800 my-1 pt-1 px-3 py-1 text-[10px] font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                  <div className="border-t border-slate-200 dark:border-zinc-800 my-1 pt-1 px-3 py-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
                     <span>关联项目跨楼层</span>
                   </div>
                   {associatedFloors.map((af) => (
@@ -109,10 +109,10 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
                         onSelectAssociatedFloor?.(af);
                         setShowFloorDropdown(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 flex items-center justify-between text-zinc-300 hover:bg-amber-950/40 hover:text-amber-200 transition-colors"
+                      className="w-full text-left px-3 py-1.5 flex items-center justify-between text-slate-700 hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-300 dark:hover:bg-amber-950/40 dark:hover:text-amber-200 transition-colors"
                     >
                       <span className="truncate">{af.projectName} · {af.floorName}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 text-amber-300 shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 shrink-0">
                         关联
                       </span>
                     </button>
@@ -123,11 +123,11 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-zinc-400">
+        <div className="flex items-center gap-1 text-slate-500 dark:text-zinc-400">
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:text-white rounded hover:bg-zinc-800"
+            className="p-1 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
             title={isExpanded ? '缩小' : '放大沙盘'}
           >
             {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -136,7 +136,7 @@ export const SandplayMap: React.FC<SandplayMapProps> = ({
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1 hover:text-white rounded hover:bg-zinc-800 text-[10px]"
+              className="p-1 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-zinc-800 text-[10px] transition-colors"
             >
               {isCollapsed ? '展开' : '折叠'}
             </button>

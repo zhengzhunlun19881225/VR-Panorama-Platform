@@ -33,36 +33,36 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
   return (
     <div
       id="share-modal-backdrop"
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         id="share-modal-card"
-        className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-zinc-100"
+        className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-slate-900 dark:text-zinc-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-sm text-white">获取全景分享链接与嵌入代码</h3>
+            <Globe className="w-5 h-5 text-sky-500" />
+            <h3 className="font-semibold text-sm text-slate-900 dark:text-white">获取全景分享链接与嵌入代码</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-white p-1 rounded hover:bg-zinc-800"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 p-1 rounded transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-xs">
+        <div className="flex bg-slate-100 dark:bg-zinc-950 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('link')}
             className={`flex-1 py-1.5 rounded-lg font-medium transition-all ${
-              activeTab === 'link' ? 'bg-zinc-800 text-sky-400 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+              activeTab === 'link' ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
             }`}
           >
             分享链接
@@ -71,7 +71,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
             type="button"
             onClick={() => setActiveTab('qrcode')}
             className={`flex-1 py-1.5 rounded-lg font-medium transition-all ${
-              activeTab === 'qrcode' ? 'bg-zinc-800 text-sky-400 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+              activeTab === 'qrcode' ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
             }`}
           >
             全景二维码
@@ -80,7 +80,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
             type="button"
             onClick={() => setActiveTab('embed')}
             className={`flex-1 py-1.5 rounded-lg font-medium transition-all ${
-              activeTab === 'embed' ? 'bg-zinc-800 text-sky-400 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+              activeTab === 'embed' ? 'bg-white text-sky-600 shadow-sm dark:bg-zinc-800 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
             }`}
           >
             网页嵌入代码
@@ -91,9 +91,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
         {activeTab === 'link' && (
           <div className="space-y-3 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-zinc-400">公开分享 URL</span>
+              <span className="text-slate-500 dark:text-zinc-400">公开分享 URL</span>
               {project.accessPermission === 'password' && (
-                <span className="text-[10px] text-amber-400 flex items-center gap-1">
+                <span className="text-[10px] text-amber-500 flex items-center gap-1">
                   <KeyRound className="w-3 h-3" />
                   访问需输入密码: {project.accessPassword || '默认'}
                 </span>
@@ -105,7 +105,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-300 select-all font-mono"
+                className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-zinc-300 select-all font-mono"
               />
               <button
                 type="button"
@@ -117,7 +117,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
               </button>
             </div>
 
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
               任何人通过该链接均可在手机、平板、电脑或 VR 头显中畅享沉浸式 360° 漫游。
             </p>
           </div>
@@ -126,7 +126,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
         {/* Tab 2: QR Code */}
         {activeTab === 'qrcode' && (
           <div className="flex flex-col items-center py-3 space-y-3">
-            <div className="p-3 bg-white rounded-2xl shadow-xl">
+            <div className="p-3 bg-white dark:bg-white rounded-2xl shadow-xl border border-slate-200 dark:border-zinc-700">
               {/* Clean SVG Vector QR Code representation */}
               <div className="w-44 h-44 bg-white flex flex-col items-center justify-center p-2 border border-zinc-200 rounded-xl relative">
                 <div className="w-full h-full border-4 border-zinc-900 p-2 flex flex-col justify-between">
@@ -144,7 +144,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
                 </div>
               </div>
             </div>
-            <p className="text-xs text-zinc-400 text-center">
+            <p className="text-xs text-slate-500 dark:text-zinc-400 text-center">
               使用微信或手机浏览器扫一扫，立即体验移动端全景漫游
             </p>
           </div>
@@ -153,12 +153,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
         {/* Tab 3: Embed Code */}
         {activeTab === 'embed' && (
           <div className="space-y-3 text-xs">
-            <div className="flex justify-between text-zinc-400">
+            <div className="flex justify-between text-slate-500 dark:text-zinc-400">
               <span>HTML IFrame 嵌入代码</span>
               <button
                 type="button"
                 onClick={() => handleCopy(embedCode, 'iframe')}
-                className="text-sky-400 hover:text-sky-300 flex items-center gap-1"
+                className="text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300 flex items-center gap-1 font-medium"
               >
                 {copiedIframe ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedIframe ? '已复制' : '复制代码'}</span>
@@ -169,10 +169,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
               readOnly
               rows={4}
               value={embedCode}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded-xl p-3 text-[11px] text-zinc-300 font-mono select-all"
+              className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-xl p-3 text-[11px] text-slate-800 dark:text-zinc-300 font-mono select-all"
             />
 
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
               复制上方代码，直接粘贴至您的官网、微信公众号文章网页或第三方系统中即可内嵌展示。
             </p>
           </div>
@@ -183,7 +183,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ project, isOpen, onClose
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 rounded-xl text-xs transition-colors"
           >
             关闭
           </button>

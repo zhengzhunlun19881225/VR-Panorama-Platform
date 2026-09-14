@@ -39,19 +39,19 @@ export const HotspotModal: React.FC<HotspotModalProps> = ({ hotspot, onClose }) 
   return (
     <div 
       id="hotspot-modal-backdrop"
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div 
         id="hotspot-modal-card"
-        className="bg-zinc-900 border border-zinc-700/80 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl text-zinc-100 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200"
+        className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700/80 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl text-slate-900 dark:text-zinc-100 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/90 sticky top-0 z-10">
+        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/90 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <span 
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
               style={{ backgroundColor: hotspot.style.color || '#0ea5e9' }}
             >
               {hotspot.type === 'info_richtext' && <FileText className="w-4 h-4" />}
@@ -63,9 +63,9 @@ export const HotspotModal: React.FC<HotspotModalProps> = ({ hotspot, onClose }) 
               {hotspot.type === 'info_form' && <Send className="w-4 h-4" />}
             </span>
             <div>
-              <h3 className="font-semibold text-base leading-tight text-white">{content.title || hotspot.title}</h3>
+              <h3 className="font-semibold text-base leading-tight text-slate-900 dark:text-white">{content.title || hotspot.title}</h3>
               {content.description && (
-                <p className="text-xs text-zinc-400 mt-0.5">{content.description}</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{content.description}</p>
               )}
             </div>
           </div>
@@ -73,7 +73,7 @@ export const HotspotModal: React.FC<HotspotModalProps> = ({ hotspot, onClose }) 
             id="btn-close-hotspot-modal"
             type="button"
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white rounded-lg dark:hover:bg-zinc-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

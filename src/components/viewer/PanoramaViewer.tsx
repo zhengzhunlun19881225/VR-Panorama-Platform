@@ -24,7 +24,23 @@ import {
 } from 'lucide-react';
 
 export interface PanoramaViewerRef {
-  setView: (yaw: number, pitch: number, fov?: number, animated?: boolean) => void;
+  setView: (
+    yaw: number, 
+    pitch: number, 
+    fov?: number, 
+    animated?: boolean, 
+    durationSec?: number, 
+    onComplete?: () => void
+  ) => void;
+  rotateView: (
+    deltaYaw: number,
+    durationSec?: number,
+    onComplete?: () => void
+  ) => void;
+  pauseTransition: () => void;
+  resumeTransition: () => void;
+  stopTransition: () => void;
+  getCurrentView: () => ViewAngle;
   triggerLittlePlanet: () => void;
 }
 
@@ -33,6 +49,7 @@ interface PanoramaViewerProps {
   allScenes?: Scene[];
   isEditorMode?: boolean;
   selectedHotspotId?: string | null;
+  highlightHotspotId?: string | null;
   onSelectHotspot?: (hotspot: Hotspot | null) => void;
   onSceneJump?: (targetSceneId: string, landingView?: { yaw: number; pitch: number }) => void;
   onHotspotClick?: (hotspot: Hotspot) => void;
@@ -50,6 +67,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
   allScenes = [],
   isEditorMode = false,
   selectedHotspotId = null,
+  highlightHotspotId = null,
   onSelectHotspot,
   onSceneJump,
   onHotspotClick,
@@ -76,6 +94,9 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
   const [fov, setFov] = useState<number>(scene.initialView.fov);
 
   const [hotspotScreenPositions, setHotspotScreenPositions] = useState<
+    { id: string; x: number; y: number; isBehind: boolean }[]
+  >([]);
+  const lastHotspotPositionsRef = useRef<
     { id: string; x: number; y: number; isBehind: boolean }[]
   >([]);
 
@@ -110,6 +131,26 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
   const transitionAnimIdRef = useRef<number | null>(null);
   const roamAnimIdRef = useRef<number | null>(null);
   const planetAnimIdRef = useRef<number | null>(null);
+
+  // Transition state tracking for smooth camera movements, rotations, pause, and resume
+  const transitionStateRef = useRef<{
+    active: boolean;
+    isPaused: boolean;
+    isRotating: boolean;
+    startYaw: number;
+    diffYaw: number;
+    startPitch: number;
+    diffPitch: number;
+    startFov: number;
+    diffFov: number;
+    targetYaw: number;
+    targetPitch: number;
+    targetFov: number;
+    startTime: number;
+    durationMs: number;
+    elapsedBeforePause: number;
+    onComplete?: () => void;
+  } | null>(null);
   
   // Stably keep current scene & dynamic flags accessible to the renderLoop closure
   const sceneRef = useRef(scene);
@@ -135,12 +176,44 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
     });
   }, []);
 
-  // Update viewStateRef when state updates
+  // Stable callback refs
+  const onViewChangeRef = useRef(onViewChange);
+  onViewChangeRef.current = onViewChange;
+  const onCameraAngleChangeRef = useRef(onCameraAngleChange);
+  onCameraAngleChangeRef.current = onCameraAngleChange;
+
+  const lastReportedAngleRef = useRef<ViewAngle>({ yaw, pitch, fov });
+  const reportThrottleTimerRef = useRef<number | null>(null);
+
+  // Update viewStateRef when state updates without dependency on parent callback identities
   useEffect(() => {
     viewStateRef.current = { yaw, pitch, fov };
-    onViewChange?.({ yaw, pitch, fov });
-    onCameraAngleChange?.({ yaw, pitch, fov });
-  }, [yaw, pitch, fov, onViewChange, onCameraAngleChange]);
+
+    const last = lastReportedAngleRef.current;
+    const dy = Math.abs(last.yaw - yaw);
+    const dp = Math.abs(last.pitch - pitch);
+    const df = Math.abs(last.fov - fov);
+
+    if (dy > 0.1 || dp > 0.1 || df > 0.1) {
+      if (!reportThrottleTimerRef.current) {
+        reportThrottleTimerRef.current = window.setTimeout(() => {
+          reportThrottleTimerRef.current = null;
+          lastReportedAngleRef.current = { yaw, pitch, fov };
+          onViewChangeRef.current?.({ yaw, pitch, fov });
+          onCameraAngleChangeRef.current?.({ yaw, pitch, fov });
+        }, 50);
+      }
+    }
+  }, [yaw, pitch, fov]);
+
+  useEffect(() => {
+    return () => {
+      if (reportThrottleTimerRef.current) {
+        window.clearTimeout(reportThrottleTimerRef.current);
+        reportThrottleTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Window pointer move and up listeners while dragging a hotspot
   useEffect(() => {
@@ -201,13 +274,62 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
     };
   }, [draggingHotspotId, onUpdateHotspotPosition]);
 
-  useImperativeHandle(ref, () => ({
-    setView: (newYaw: number, newPitch: number, newFov?: number, animated: boolean = false) => {
-      // Always cancel any ongoing transition
-      if (transitionAnimIdRef.current) {
-        cancelAnimationFrame(transitionAnimIdRef.current);
+  const stopOngoingTransition = useCallback(() => {
+    if (transitionAnimIdRef.current) {
+      cancelAnimationFrame(transitionAnimIdRef.current);
+      transitionAnimIdRef.current = null;
+    }
+    transitionStateRef.current = null;
+  }, []);
+
+  const runTransitionLoop = useCallback(() => {
+    const tick = (now: number) => {
+      const state = transitionStateRef.current;
+      if (!state || !state.active || state.isPaused) return;
+
+      const elapsed = now - state.startTime;
+      const progress = Math.min(1, elapsed / state.durationMs);
+      const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      const nextY = state.startYaw + state.diffYaw * ease;
+      const nextP = state.startPitch + state.diffPitch * ease;
+      const nextF = state.startFov + state.diffFov * ease;
+
+      setYaw(Number.isFinite(nextY) ? nextY : state.targetYaw);
+      setPitch(Number.isFinite(nextP) ? nextP : state.targetPitch);
+      setFov(Number.isFinite(nextF) ? nextF : state.targetFov);
+
+      if (progress < 1) {
+        transitionAnimIdRef.current = requestAnimationFrame(tick);
+      } else {
         transitionAnimIdRef.current = null;
+        let finalY = state.targetYaw;
+        while (finalY > 180) finalY -= 360;
+        while (finalY < -180) finalY += 360;
+        setYaw(finalY);
+        setPitch(state.targetPitch);
+        setFov(state.targetFov);
+        const cb = state.onComplete;
+        transitionStateRef.current = null;
+        if (cb) {
+          cb();
+        }
       }
+    };
+
+    transitionAnimIdRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    setView: (
+      newYaw: number,
+      newPitch: number,
+      newFov?: number,
+      animated: boolean = false,
+      durationSec?: number,
+      onComplete?: () => void
+    ) => {
+      stopOngoingTransition();
 
       const safeTargetYaw = Number.isFinite(newYaw)
         ? newYaw
@@ -231,36 +353,99 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
 
         const diffPitch = safeTargetPitch - startPitch;
         const diffFov = safeTargetFov - startFov;
-        const startTime = performance.now();
-        const duration = 1200;
+        const durationMs = Math.max(200, (durationSec ?? 1.2) * 1000);
 
-        const animateTransition = (now: number) => {
-          const progress = Math.min(1, (now - startTime) / duration);
-          const ease = 1 - Math.pow(1 - progress, 3);
-          const nextY = startYaw + diffYaw * ease;
-          const nextP = startPitch + diffPitch * ease;
-          const nextF = startFov + diffFov * ease;
-
-          setYaw(Number.isFinite(nextY) ? nextY : safeTargetYaw);
-          setPitch(Number.isFinite(nextP) ? nextP : safeTargetPitch);
-          setFov(Number.isFinite(nextF) ? nextF : safeTargetFov);
-
-          if (progress < 1) {
-            transitionAnimIdRef.current = requestAnimationFrame(animateTransition);
-          } else {
-            transitionAnimIdRef.current = null;
-            setYaw(safeTargetYaw);
-            setPitch(safeTargetPitch);
-            setFov(safeTargetFov);
-          }
+        transitionStateRef.current = {
+          active: true,
+          isPaused: false,
+          isRotating: false,
+          startYaw,
+          diffYaw,
+          startPitch,
+          diffPitch,
+          startFov,
+          diffFov,
+          targetYaw: safeTargetYaw,
+          targetPitch: safeTargetPitch,
+          targetFov: safeTargetFov,
+          startTime: performance.now(),
+          durationMs,
+          elapsedBeforePause: 0,
+          onComplete
         };
-        transitionAnimIdRef.current = requestAnimationFrame(animateTransition);
+
+        runTransitionLoop();
       } else {
         setYaw(safeTargetYaw);
         setPitch(safeTargetPitch);
         setFov(safeTargetFov);
+        if (onComplete) {
+          onComplete();
+        }
       }
     },
+    rotateView: (
+      deltaYaw: number,
+      durationSec?: number,
+      onComplete?: () => void
+    ) => {
+      stopOngoingTransition();
+
+      const startYaw = Number.isFinite(viewStateRef.current.yaw) ? viewStateRef.current.yaw : 0;
+      const currentPitch = Number.isFinite(viewStateRef.current.pitch) ? viewStateRef.current.pitch : 0;
+      const currentFov = Number.isFinite(viewStateRef.current.fov) ? viewStateRef.current.fov : 75;
+      const durationMs = Math.max(300, (durationSec ?? 1.8) * 1000);
+
+      let targetYaw = startYaw + deltaYaw;
+      while (targetYaw > 180) targetYaw -= 360;
+      while (targetYaw < -180) targetYaw += 360;
+
+      transitionStateRef.current = {
+        active: true,
+        isPaused: false,
+        isRotating: true,
+        startYaw,
+        diffYaw: deltaYaw,
+        startPitch: currentPitch,
+        diffPitch: 0,
+        startFov: currentFov,
+        diffFov: 0,
+        targetYaw,
+        targetPitch: currentPitch,
+        targetFov: currentFov,
+        startTime: performance.now(),
+        durationMs,
+        elapsedBeforePause: 0,
+        onComplete
+      };
+
+      runTransitionLoop();
+    },
+    pauseTransition: () => {
+      if (transitionStateRef.current && transitionStateRef.current.active && !transitionStateRef.current.isPaused) {
+        if (transitionAnimIdRef.current) {
+          cancelAnimationFrame(transitionAnimIdRef.current);
+          transitionAnimIdRef.current = null;
+        }
+        transitionStateRef.current.isPaused = true;
+        transitionStateRef.current.elapsedBeforePause = performance.now() - transitionStateRef.current.startTime;
+      }
+    },
+    resumeTransition: () => {
+      if (transitionStateRef.current && transitionStateRef.current.active && transitionStateRef.current.isPaused) {
+        transitionStateRef.current.isPaused = false;
+        transitionStateRef.current.startTime = performance.now() - transitionStateRef.current.elapsedBeforePause;
+        runTransitionLoop();
+      }
+    },
+    stopTransition: () => {
+      stopOngoingTransition();
+    },
+    getCurrentView: () => ({
+      yaw: viewStateRef.current.yaw,
+      pitch: viewStateRef.current.pitch,
+      fov: viewStateRef.current.fov
+    }),
     triggerLittlePlanet: () => {
       triggerLittlePlanetAnimation(scene.initialView, scene.littlePlanetDuration || 2.5);
     }
@@ -488,7 +673,30 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
               isBehind: screen.isBehind
             };
           });
-          setHotspotScreenPositions(positions);
+
+          // Only trigger state update if positions or visibility meaningfully changed
+          const prevPositions = lastHotspotPositionsRef.current;
+          let changed = prevPositions.length !== positions.length;
+          if (!changed) {
+            for (let i = 0; i < positions.length; i++) {
+              const pNew = positions[i];
+              const pOld = prevPositions[i];
+              if (
+                pNew.id !== pOld.id ||
+                pNew.isBehind !== pOld.isBehind ||
+                Math.abs(pNew.x - pOld.x) > 0.5 ||
+                Math.abs(pNew.y - pOld.y) > 0.5
+              ) {
+                changed = true;
+                break;
+              }
+            }
+          }
+
+          if (changed) {
+            lastHotspotPositionsRef.current = positions;
+            setHotspotScreenPositions(positions);
+          }
         }
       }
     };
@@ -728,6 +936,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
         if (!hotspot) return null;
 
         const isSelected = selectedHotspotId === hotspot.id;
+        const isHighlighted = highlightHotspotId === hotspot.id;
         const isBeingDragged = draggingHotspotId === hotspot.id;
         const sizeClasses =
           hotspot.style.size === 'sm'
@@ -743,6 +952,8 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
             className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 pointer-events-auto transition-transform duration-75 group ${
               isBeingDragged
                 ? 'cursor-grabbing scale-125 z-40'
+                : isHighlighted
+                ? 'scale-120 z-30'
                 : isEditorMode
                 ? 'cursor-grab hover:scale-115'
                 : 'cursor-pointer hover:scale-115'
@@ -792,6 +1003,18 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
               style={{ backgroundColor: hotspot.style.color || '#0ea5e9' }}
             />
 
+            {/* Highlighted Roam Inspection Target Beacon */}
+            {isHighlighted && (
+              <>
+                <span className="absolute -inset-3 rounded-full animate-ping bg-sky-400/50 pointer-events-none" />
+                <span className="absolute -inset-1.5 rounded-full ring-4 ring-sky-400 ring-offset-2 ring-offset-black/60 animate-pulse pointer-events-none" />
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap bg-sky-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-xl flex items-center gap-1 border border-sky-300 animate-bounce z-30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>巡检设备目标</span>
+                </div>
+              </>
+            )}
+
             {/* Hotspot Outer Ring & Body */}
             <div
               className={`${sizeClasses} rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-all duration-200 ${
@@ -819,19 +1042,19 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
             {/* Hover Tooltip / Title Card */}
             {!isBeingDragged && (
               <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 whitespace-nowrap">
-                <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-700/80 text-zinc-100 px-2.5 py-1.5 rounded-md text-xs shadow-xl flex flex-col items-center gap-0.5">
+                <div className="bg-white/95 text-slate-800 border-slate-200/90 dark:bg-zinc-900/90 dark:border-zinc-700/80 dark:text-zinc-100 backdrop-blur-md border px-2.5 py-1.5 rounded-lg text-xs shadow-xl flex flex-col items-center gap-0.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium">{hotspot.title}</span>
+                    <span className="font-semibold">{hotspot.title}</span>
                     {hotspot.type === 'scene_jump' && (
-                      <span className="text-[10px] text-sky-400 bg-sky-950/80 px-1 py-0.5 rounded">跳转</span>
+                      <span className="text-[10px] text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-950/80 px-1 py-0.5 rounded font-medium">跳转</span>
                     )}
                   </div>
                   {isEditorMode ? (
-                    <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                      <Move className="w-2.5 h-2.5 text-sky-400" /> 按住拖拽修改位置
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+                      <Move className="w-2.5 h-2.5 text-sky-500" /> 按住拖拽修改位置
                     </span>
                   ) : (
-                    <span className="text-[10px] text-sky-400 font-medium">
+                    <span className="text-[10px] text-sky-600 dark:text-sky-400 font-medium">
                       {hotspot.type === 'scene_jump' ? '点击跳转场景' : '点击查看详情'}
                     </span>
                   )}
@@ -845,13 +1068,13 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
       {/* Floating HUD Quick Controls on Canvas */}
       <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 pointer-events-auto">
         {/* Real-time Angle Readout Badge */}
-        <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-700/60 rounded-lg px-3 py-1.5 text-xs text-zinc-300 shadow-md flex items-center gap-2">
-          <Compass className="w-3.5 h-3.5 text-sky-400" />
-          <span>Yaw: <strong className="text-zinc-100">{Math.round(yaw)}°</strong></span>
-          <span className="text-zinc-600">|</span>
-          <span>Pitch: <strong className="text-zinc-100">{Math.round(pitch)}°</strong></span>
-          <span className="text-zinc-600">|</span>
-          <span>FOV: <strong className="text-zinc-100">{Math.round(fov)}°</strong></span>
+        <div className="bg-white/90 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200 dark:border-zinc-700/60 rounded-xl px-3 py-1.5 text-xs text-slate-700 dark:text-zinc-300 shadow-md flex items-center gap-2">
+          <Compass className="w-3.5 h-3.5 text-sky-500" />
+          <span>Yaw: <strong className="text-slate-900 dark:text-zinc-100">{Math.round(yaw)}°</strong></span>
+          <span className="text-slate-300 dark:text-zinc-600">|</span>
+          <span>Pitch: <strong className="text-slate-900 dark:text-zinc-100">{Math.round(pitch)}°</strong></span>
+          <span className="text-slate-300 dark:text-zinc-600">|</span>
+          <span>FOV: <strong className="text-slate-900 dark:text-zinc-100">{Math.round(fov)}°</strong></span>
         </div>
 
         {/* Auto-rotate toggle */}
@@ -860,14 +1083,14 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
           type="button"
           onClick={toggleAutoRotate}
           title={isAutoRotating ? '点击暂停自动旋转' : '开启自动旋转'}
-          className={`p-2 rounded-lg border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
+          className={`p-2 rounded-xl border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
             isAutoRotating
-              ? 'bg-sky-600/80 border-sky-400 text-white'
-              : 'bg-zinc-900/80 border-zinc-700/60 text-zinc-300 hover:text-white hover:bg-zinc-800'
+              ? 'bg-sky-600 border-sky-500 text-white shadow-sky-500/20'
+              : 'bg-white/90 border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-slate-100 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800'
           }`}
         >
           <RotateCw className={`w-3.5 h-3.5 ${isAutoRotating ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">{isAutoRotating ? '停止自转' : '自转'}</span>
+          <span className="hidden sm:inline font-medium">{isAutoRotating ? '停止自转' : '自转'}</span>
         </button>
 
         {/* Little planet preview trigger */}
@@ -877,10 +1100,10 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
             type="button"
             onClick={() => triggerLittlePlanetAnimation(scene.initialView, scene.littlePlanetDuration || 2.5)}
             title="开场小行星效果预览"
-            className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-700/60 hover:bg-zinc-800 text-zinc-300 hover:text-white backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5"
+            className="p-2 rounded-xl bg-white/90 border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-950 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">小行星</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="hidden sm:inline font-medium">小行星</span>
           </button>
         )}
 
@@ -891,14 +1114,14 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
             type="button"
             onClick={() => setGyroActive(!gyroActive)}
             title="陀螺仪重力感应"
-            className={`p-2 rounded-lg border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
+            className={`p-2 rounded-xl border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
               gyroActive
-                ? 'bg-emerald-600/80 border-emerald-400 text-white'
-                : 'bg-zinc-900/80 border-zinc-700/60 text-zinc-300 hover:text-white hover:bg-zinc-800'
+                ? 'bg-emerald-600 border-emerald-500 text-white shadow-emerald-500/20'
+                : 'bg-white/90 border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-slate-100 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-zinc-800'
             }`}
           >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">陀螺仪</span>
+            <Smartphone className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="hidden sm:inline font-medium">陀螺仪</span>
           </button>
         )}
 
@@ -909,10 +1132,10 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
             type="button"
             onClick={() => setIsMuted(!isMuted)}
             title={isMuted ? '恢复声音' : '静音'}
-            className={`p-2 rounded-lg border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
+            className={`p-2 rounded-xl border backdrop-blur-md text-xs transition-colors shadow-md flex items-center gap-1.5 ${
               !isMuted
-                ? 'bg-zinc-900/80 border-zinc-700/60 text-sky-400'
-                : 'bg-zinc-900/80 border-zinc-700/60 text-zinc-500'
+                ? 'bg-white/90 border-slate-200 text-sky-600 hover:bg-slate-100 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:text-sky-400'
+                : 'bg-white/90 border-slate-200 text-slate-400 hover:bg-slate-100 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:text-zinc-500'
             }`}
           >
             {!isMuted ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -925,7 +1148,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
           type="button"
           onClick={toggleFullscreen}
           title="全屏全景漫游"
-          className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-700/60 hover:bg-zinc-800 text-zinc-300 hover:text-white backdrop-blur-md text-xs transition-colors shadow-md"
+          className="p-2 rounded-xl bg-white/90 border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-950 dark:bg-zinc-900/80 dark:border-zinc-700/60 dark:hover:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white backdrop-blur-md text-xs transition-colors shadow-md"
         >
           {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
         </button>
@@ -933,8 +1156,8 @@ export const PanoramaViewer = forwardRef<PanoramaViewerRef, PanoramaViewerProps>
 
       {/* Active Scene Watermark / Name Pill at top center */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-        <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-700/60 text-zinc-100 px-4 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="bg-white/90 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200 dark:border-zinc-700/60 text-slate-800 dark:text-zinc-100 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>{scene.name}</span>
         </div>
       </div>

@@ -106,17 +106,17 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
     <>
       <aside
         id="left-scenes-drawer"
-        className={`bg-zinc-900 border-r border-zinc-800 flex flex-col h-full shrink-0 z-30 transition-all duration-300 select-none ${
+        className={`bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full shrink-0 z-30 transition-all duration-300 select-none text-slate-800 dark:text-zinc-100 ${
           isCollapsed ? 'w-12' : 'w-64 sm:w-72'
         }`}
       >
         {/* Drawer Header */}
-        <div className="p-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/40">
+        <div className="p-3 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-950/40">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-sky-400" />
-              <span className="font-semibold text-xs text-white">场景列表与楼层</span>
-              <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.2 rounded-full">
+              <Layers className="w-4 h-4 text-sky-500" />
+              <span className="font-semibold text-xs text-slate-900 dark:text-white">场景列表与楼层</span>
+              <span className="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 px-1.5 py-0.2 rounded-full border border-slate-200 dark:border-zinc-700">
                 {project.scenes.length}
               </span>
             </div>
@@ -124,7 +124,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 text-zinc-400 hover:text-white rounded hover:bg-zinc-800 mx-auto"
+            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 rounded mx-auto transition-colors"
             title={isCollapsed ? '展开场景列表' : '折叠面板'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -140,12 +140,12 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                 setIsCollapsed(false);
                 setShowAddModal(true);
               }}
-              className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center hover:bg-sky-500"
+              className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center hover:bg-sky-500 shadow-md shadow-sky-600/20"
               title="新增场景"
             >
               <Plus className="w-4 h-4" />
             </button>
-            <div className="border-t border-zinc-800 w-6 my-1" />
+            <div className="border-t border-slate-200 dark:border-zinc-800 w-6 my-1" />
             {project.scenes.map((s) => (
               <button
                 key={s.id}
@@ -163,7 +163,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             {/* Action Bar: Add Scene */}
-            <div className="p-3 border-b border-zinc-800">
+            <div className="p-3 border-b border-slate-200 dark:border-zinc-800">
               <button
                 id="btn-open-add-scene-modal"
                 type="button"
@@ -186,13 +186,13 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                     onClick={() => onSelectScene(s.id)}
                     className={`p-2 rounded-xl border transition-all cursor-pointer group ${
                       isActive
-                        ? 'bg-sky-500/10 border-sky-500/80 shadow-md shadow-sky-500/10'
-                        : 'bg-zinc-950/40 border-zinc-800 hover:bg-zinc-800/60'
+                        ? 'bg-sky-50 dark:bg-sky-500/10 border-sky-400 dark:border-sky-500/80 shadow-md shadow-sky-500/10'
+                        : 'bg-slate-50/70 dark:bg-zinc-950/40 border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800/60'
                     }`}
                   >
                     <div className="flex gap-2.5 items-center">
                       {/* Panorama 2:1 Thumbnail */}
-                      <div className="w-16 h-10 rounded-lg overflow-hidden shrink-0 bg-black relative border border-zinc-700/60">
+                      <div className="w-16 h-10 rounded-lg overflow-hidden shrink-0 bg-black relative border border-slate-300 dark:border-zinc-700/60 shadow-xs">
                         <img
                           src={s.panoramaThumb}
                           alt={s.name}
@@ -207,14 +207,14 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                       {/* Scene Title & Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className={`text-xs font-medium truncate ${isActive ? 'text-sky-300' : 'text-zinc-200'}`}>
+                          <h4 className={`text-xs font-medium truncate ${isActive ? 'text-sky-600 dark:text-sky-300' : 'text-slate-800 dark:text-zinc-200'}`}>
                             {s.name}
                           </h4>
                         </div>
-                        <div className="text-[10px] text-zinc-500 flex items-center gap-2 mt-1">
+                        <div className="text-[10px] text-slate-500 dark:text-zinc-500 flex items-center gap-2 mt-1">
                           <span>{s.hotspots.length} 个热点</span>
                           <span>•</span>
-                          <span className="text-emerald-400/90">瓦片已优化</span>
+                          <span className="text-emerald-600 dark:text-emerald-400/90">瓦片已优化</span>
                         </div>
                       </div>
                     </div>
@@ -325,22 +325,22 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
       {showAddModal && (
         <div
           id="add-scene-modal"
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setShowAddModal(false)}
         >
           <div
-            className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-zinc-100"
+            className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-slate-900 dark:text-zinc-100"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 className="font-semibold text-sm text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-sky-400" />
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <Plus className="w-4 h-4 text-sky-500" />
                 新增 360° VR 全景场景
               </h3>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-zinc-400 hover:text-white text-xs"
+                className="text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-white text-xs p-1 rounded"
               >
                 ✕
               </button>
@@ -348,28 +348,28 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
 
             {/* Scene Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-zinc-300">场景名称</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">场景名称</label>
               <input
                 type="text"
                 value={newSceneName}
                 onChange={(e) => setNewSceneName(e.target.value)}
                 placeholder="例如：2F 沉浸式数字研讨室"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
             {/* Upload or Preset 2:1 Panorama */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-zinc-300">
+              <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">
                 上传 2:1 等距矩形全景原图 (Equirectangular)
               </label>
 
-              <label className="border-2 border-dashed border-zinc-700 hover:border-sky-500 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-zinc-950/40 transition-colors">
-                <Upload className="w-6 h-6 text-sky-400" />
-                <span className="text-xs text-zinc-300">
+              <label className="border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-sky-500 dark:hover:border-sky-500 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-slate-50/60 dark:bg-zinc-950/40 transition-colors">
+                <Upload className="w-6 h-6 text-sky-500" />
+                <span className="text-xs text-slate-700 dark:text-zinc-300">
                   {isUploading ? '正在处理全景图...' : '点击或拖拽上传 2:1 全景图片'}
                 </span>
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500">
                   支持 JPG / PNG，建议分辨率 4096×2048 或 8192×4096
                 </span>
                 <input
@@ -381,8 +381,8 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
               </label>
 
               {customImageUrl && (
-                <div className="rounded-lg overflow-hidden border border-emerald-500/50 p-2 bg-emerald-950/20 flex items-center gap-2 text-xs text-emerald-300">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="rounded-lg overflow-hidden border border-emerald-500/50 p-2 bg-emerald-50 dark:bg-emerald-950/20 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span className="truncate">已选择全景图，系统将自动生成多分辨率瓦片</span>
                 </div>
               )}
@@ -391,8 +391,8 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
             {/* Preset Atmosphere Selector */}
             {!customImageUrl && (
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-zinc-300 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <label className="text-xs font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   或选用内置 360° 空间预设风格
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -409,8 +409,8 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                       onClick={() => setSelectedTheme(thm.id as any)}
                       className={`py-2 px-2 rounded-lg text-xs font-medium border transition-all ${
                         selectedTheme === thm.id
-                          ? 'bg-sky-600/30 border-sky-400 text-sky-200'
-                          : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                          ? 'bg-sky-50 dark:bg-sky-600/30 border-sky-400 text-sky-700 dark:text-sky-200'
+                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                       }`}
                     >
                       {thm.label}
@@ -425,7 +425,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 rounded-xl text-xs transition-colors"
               >
                 取消
               </button>
@@ -434,7 +434,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                 type="button"
                 onClick={handleCreateScene}
                 disabled={!newSceneName.trim()}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white rounded-xl text-xs font-medium shadow-md shadow-sky-600/20"
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white rounded-xl text-xs font-medium shadow-md shadow-sky-600/20 transition-colors"
               >
                 立即创建并切片
               </button>
@@ -445,17 +445,17 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
 
       {/* MODAL: Edit Scene Info & Panorama Image */}
       {editingScene && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-700 max-w-md w-full rounded-2xl p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 className="font-semibold text-sm text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-sky-400" />
+        <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 max-w-md w-full rounded-2xl p-5 space-y-4 shadow-2xl text-slate-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-sky-500" />
                 修改场景名称与底图
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingScene(null)}
-                className="p-1 text-zinc-400 hover:text-white rounded"
+                className="p-1 text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-white rounded transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -463,20 +463,20 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
 
             {/* Scene Name */}
             <div>
-              <label className="block text-xs text-zinc-300 mb-1">场景名称</label>
+              <label className="block text-xs text-slate-700 dark:text-zinc-300 mb-1">场景名称</label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="输入场景名称"
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500"
               />
             </div>
 
             {/* Current Panorama Preview */}
             <div>
-              <label className="block text-xs text-zinc-300 mb-1">当前全景底图 (2:1)</label>
-              <div className="aspect-[2/1] rounded-xl overflow-hidden bg-black border border-zinc-800 relative">
+              <label className="block text-xs text-slate-700 dark:text-zinc-300 mb-1">当前全景底图 (2:1)</label>
+              <div className="aspect-[2/1] rounded-xl overflow-hidden bg-black border border-slate-300 dark:border-zinc-800 relative shadow-xs">
                 <img
                   src={editPanoramaUrl || editingScene.panoramaUrl}
                   alt={editName}
@@ -491,7 +491,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
 
             {/* Upload Local Image */}
             <div>
-              <label className="cursor-pointer flex items-center justify-center gap-2 w-full py-2 px-3 bg-sky-600/20 hover:bg-sky-600/30 text-sky-400 border border-sky-500/40 rounded-xl text-xs font-medium transition-colors">
+              <label className="cursor-pointer flex items-center justify-center gap-2 w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 dark:bg-sky-600/20 dark:hover:bg-sky-600/30 text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-500/40 rounded-xl text-xs font-medium transition-colors">
                 <Upload className="w-4 h-4" />
                 <span>上传新的本地 2:1 全景图</span>
                 <input
@@ -514,19 +514,19 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
 
             {/* Or URL input */}
             <div className="space-y-1">
-              <label className="block text-[11px] text-zinc-400">或输入全景图 URL 地址</label>
+              <label className="block text-[11px] text-slate-500 dark:text-zinc-400">或输入全景图 URL 地址</label>
               <input
                 type="text"
                 value={editPanoramaUrl}
                 onChange={(e) => setEditPanoramaUrl(e.target.value)}
                 placeholder="https://... 或 data:image/..."
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none"
+                className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white outline-none focus:border-sky-500"
               />
             </div>
 
             {/* Or Presets */}
             <div className="space-y-1.5">
-              <span className="text-[11px] text-zinc-400">或选用高质量预设场景风格：</span>
+              <span className="text-[11px] text-slate-500 dark:text-zinc-400">或选用高质量预设场景风格：</span>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { id: 'tech', label: '科技空间' },
@@ -542,7 +542,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                       const newUrl = generateProceduralEquirectangular(preset.id as any, editName || editingScene.name);
                       setEditPanoramaUrl(newUrl);
                     }}
-                    className="p-1.5 rounded-lg text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 text-center"
+                    className="p-1.5 rounded-lg text-xs bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 text-center transition-colors"
                   >
                     {preset.label}
                   </button>
@@ -551,11 +551,11 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
             </div>
 
             {/* Modal Buttons */}
-            <div className="pt-2 flex justify-end gap-2 border-t border-zinc-800">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setEditingScene(null)}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 rounded-xl text-xs transition-colors"
               >
                 取消
               </button>
@@ -572,7 +572,7 @@ export const LeftScenesDrawer: React.FC<LeftScenesDrawerProps> = ({
                   });
                   setEditingScene(null);
                 }}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-sky-600/20"
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-sky-600/20 transition-colors"
               >
                 保存场景修改
               </button>

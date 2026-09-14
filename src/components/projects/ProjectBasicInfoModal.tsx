@@ -94,24 +94,24 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
   return (
     <div
       id="project-basic-info-modal-backdrop"
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         id="project-basic-info-modal-content"
-        className="bg-zinc-900 border border-zinc-700/80 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl text-zinc-100 overflow-hidden"
+        className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700/80 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-900 dark:text-zinc-100 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/90">
+        <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/90">
           <div className="flex items-center gap-2.5">
-            <FileText className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-base text-white">项目基础信息设置</h3>
+            <FileText className="w-5 h-5 text-sky-500" />
+            <h3 className="font-semibold text-base text-slate-900 dark:text-white">项目基础信息设置</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -121,33 +121,33 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-xs">
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="font-medium text-zinc-300">项目标题 (Name)</label>
+            <label className="font-medium text-slate-700 dark:text-zinc-300">项目标题 (Name)</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="输入VR全景项目标题"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-white focus:ring-1 focus:ring-sky-500"
+              className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-sky-500"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="font-medium text-zinc-300">项目简介 (Description)</label>
+            <label className="font-medium text-slate-700 dark:text-zinc-300">项目简介 (Description)</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="简述该VR全景项目的特色亮点、地理区位或展览主题..."
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-white focus:ring-1 focus:ring-sky-500"
+              className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-sky-500"
             />
           </div>
 
           {/* Cover Image */}
           <div className="space-y-1.5">
-            <label className="font-medium text-zinc-300 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-sky-400" />
+            <label className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-sky-500" />
               项目封面图 (Cover Image URL)
             </label>
             <div className="flex gap-3 items-center">
@@ -156,9 +156,9 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
                 placeholder="封面图地址或全景缩略图"
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-white"
+                className="flex-1 bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white"
               />
-              <div className="w-16 h-10 rounded-lg overflow-hidden border border-zinc-700 shrink-0 bg-black">
+              <div className="w-16 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-zinc-700 shrink-0 bg-slate-100 dark:bg-black">
                 <img src={coverImage} alt="Cover" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
             </div>
@@ -166,21 +166,21 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
 
           {/* Keywords / Tags */}
           <div className="space-y-1.5">
-            <label className="font-medium text-zinc-300 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-sky-400" />
+            <label className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-sky-500" />
               搜索关键词 (Keywords / 标签)
             </label>
-            <div className="flex flex-wrap gap-1.5 p-2 bg-zinc-800/80 border border-zinc-700 rounded-xl min-h-[38px]">
+            <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl min-h-[38px]">
               {keywords.map((tag) => (
                 <span
                   key={tag}
-                  className="bg-zinc-700 text-zinc-200 px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1"
+                  className="bg-slate-200 text-slate-800 dark:bg-zinc-700 dark:text-zinc-200 px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1"
                 >
                   <span>{tag}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="text-zinc-400 hover:text-white"
+                    className="text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-white"
                   >
                     ×
                   </button>
@@ -192,32 +192,32 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleAddTag}
                 placeholder="输入标签按回车添加..."
-                className="bg-transparent border-none outline-none text-xs text-white placeholder-zinc-500 flex-1 min-w-[120px]"
+                className="bg-transparent text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-hidden flex-1 min-w-[120px] px-1"
               />
             </div>
           </div>
 
           {/* Copyright */}
           <div className="space-y-1.5">
-            <label className="font-medium text-zinc-300">版权信息 (Copyright)</label>
+            <label className="font-medium text-slate-700 dark:text-zinc-300">版权信息 (Copyright)</label>
             <input
               type="text"
               value={copyright}
               onChange={(e) => setCopyright(e.target.value)}
               placeholder="例如：© 2026 XX数字科技有限公司 版权所有"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-white"
+              className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white"
             />
           </div>
 
           {/* Access Permission */}
           <div className="space-y-2">
-            <label className="font-medium text-zinc-300">访问权限控制</label>
+            <label className="font-medium text-slate-700 dark:text-zinc-300">访问权限控制</label>
             <div className="grid grid-cols-3 gap-3">
               <label
                 className={`p-3 rounded-xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
                   accessPermission === 'public'
-                    ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-                    : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                    ? 'bg-sky-50 dark:bg-sky-500/20 border-sky-500 text-sky-700 dark:text-sky-300'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 <input
@@ -228,16 +228,16 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
                   onChange={() => setAccessPermission('public')}
                   className="hidden"
                 />
-                <Globe className="w-5 h-5" />
+                <Globe className="w-5 h-5 text-sky-500" />
                 <span className="font-medium">公开访问</span>
-                <span className="text-[10px] text-zinc-500">任意访客均可直接浏览</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500">任意访客均可直接浏览</span>
               </label>
 
               <label
                 className={`p-3 rounded-xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
                   accessPermission === 'password'
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                    : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                    ? 'bg-amber-50 dark:bg-amber-500/20 border-amber-500 text-amber-700 dark:text-amber-300'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 <input
@@ -248,16 +248,16 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
                   onChange={() => setAccessPermission('password')}
                   className="hidden"
                 />
-                <KeyRound className="w-5 h-5" />
+                <KeyRound className="w-5 h-5 text-amber-500" />
                 <span className="font-medium">密码访问</span>
-                <span className="text-[10px] text-zinc-500">输入指定密码后方可进入</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500">输入指定密码后方可进入</span>
               </label>
 
               <label
                 className={`p-3 rounded-xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
                   accessPermission === 'internal'
-                    ? 'bg-purple-500/20 border-purple-400 text-purple-300'
-                    : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800'
+                    ? 'bg-purple-50 dark:bg-purple-500/20 border-purple-500 text-purple-700 dark:text-purple-300'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 <input
@@ -268,35 +268,35 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
                   onChange={() => setAccessPermission('internal')}
                   className="hidden"
                 />
-                <Users className="w-5 h-5" />
+                <Users className="w-5 h-5 text-purple-500" />
                 <span className="font-medium">内部分享</span>
-                <span className="text-[10px] text-zinc-500">仅内部授权成员可见</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500">仅内部授权成员可见</span>
               </label>
             </div>
 
             {accessPermission === 'password' && (
               <div className="pt-2">
-                <label className="text-zinc-400 text-[11px] block mb-1">设置访问密码</label>
+                <label className="text-slate-600 dark:text-zinc-400 text-[11px] block mb-1">设置访问密码</label>
                 <input
                   type="text"
                   value={accessPassword}
                   onChange={(e) => setAccessPassword(e.target.value)}
                   placeholder="请输入访问密钥（如：8888）"
-                  className="w-full bg-zinc-800 border border-amber-500/50 rounded-xl px-3.5 py-2 text-xs text-amber-300"
+                  className="w-full bg-slate-50 dark:bg-zinc-800 border border-amber-500/50 rounded-xl px-3.5 py-2 text-xs text-amber-700 dark:text-amber-300"
                 />
               </div>
             )}
           </div>
 
           {/* Associated Project Floors */}
-          <div className="space-y-2 pt-2 border-t border-zinc-800">
+          <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <label className="font-medium text-zinc-300 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-sky-400" />
+              <label className="font-medium text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-sky-500" />
                 项目间关联联动 (作为跨楼层切换)
               </label>
             </div>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
               可以将其他独立VR项目作为本项目的分栋或扩展楼层（如地下车库、附属展馆、天台观景台），在沙盘和场景切换时实现跨项目无缝漫游跳转。
             </p>
 
@@ -304,19 +304,19 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
               {associatedFloors.map((af) => (
                 <div
                   key={af.id}
-                  className="p-2.5 bg-zinc-800/60 border border-zinc-700 rounded-xl flex items-center justify-between"
+                  className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl flex items-center justify-between"
                 >
                   <div>
-                    <span className="font-medium text-zinc-200">{af.projectName}</span>
-                    <span className="text-zinc-400 ml-2">→ {af.floorName}</span>
-                    <span className="text-[10px] bg-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded ml-2">
+                    <span className="font-medium text-slate-800 dark:text-zinc-200">{af.projectName}</span>
+                    <span className="text-slate-500 dark:text-zinc-400 ml-2">→ {af.floorName}</span>
+                    <span className="text-[10px] bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 px-1.5 py-0.5 rounded ml-2">
                       {af.level > 0 ? `${af.level}F` : `B${Math.abs(af.level)}`}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveAssociatedFloor(af.id)}
-                    className="p-1 text-rose-400 hover:text-rose-300"
+                    className="p-1 text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -329,7 +329,7 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
               <div className="flex gap-2 items-center pt-1">
                 <select
                   id="select-associate-project"
-                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 flex-1"
+                  className="bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-zinc-200 flex-1"
                   onChange={(e) => {
                     const pid = e.target.value;
                     if (pid) {
@@ -352,11 +352,11 @@ export const ProjectBasicInfoModal: React.FC<ProjectBasicInfoModalProps> = ({
           </div>
 
           {/* Footer Submit */}
-          <div className="pt-4 flex justify-end gap-3 border-t border-zinc-800">
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 rounded-xl text-xs transition-colors"
             >
               取消
             </button>
