@@ -41,6 +41,9 @@ import {
 } from 'lucide-react';
 
 const SHARE_HASH_PREFIX = '#preview-';
+const PROJECT_STORAGE_KEY = 'vr_platform_projects';
+const PROJECT_ASSET_VERSION_KEY = 'vr_platform_asset_version';
+const PROJECT_ASSET_VERSION = 'tech-hq-panoramas-2026-09-15';
 
 function getSharedProjectId(): string | null {
   if (!window.location.hash.startsWith(SHARE_HASH_PREFIX)) return null;
@@ -75,13 +78,43 @@ function normalizeProjects(rawProjects: VRProject[]): VRProject[] {
   }));
 }
 
+function migrateBundledProjectAssets(projects: VRProject[]): VRProject[] {
+  const bundledProject = initialProjects.find((project) => project.id === 'proj-tech-hq');
+  if (!bundledProject) return projects;
+
+  const bundledScenes = new Map(bundledProject.scenes.map((scene) => [scene.id, scene]));
+  return projects.map((project) => {
+    if (project.id !== bundledProject.id) return project;
+
+    return {
+      ...project,
+      coverImage: bundledProject.coverImage,
+      scenes: project.scenes.map((scene) => {
+        const bundledScene = bundledScenes.get(scene.id);
+        return bundledScene
+          ? {
+              ...scene,
+              panoramaUrl: bundledScene.panoramaUrl,
+              panoramaThumb: bundledScene.panoramaThumb
+            }
+          : scene;
+      })
+    };
+  });
+}
+
 export default function App() {
   // State: Projects list with LocalStorage fallback
   const [projects, setProjects] = useState<VRProject[]>(() => {
     try {
-      const saved = localStorage.getItem('vr_platform_projects');
+      const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
       if (saved) {
-        return normalizeProjects(JSON.parse(saved));
+        const savedProjects = normalizeProjects(JSON.parse(saved));
+        if (localStorage.getItem(PROJECT_ASSET_VERSION_KEY) !== PROJECT_ASSET_VERSION) {
+          localStorage.setItem(PROJECT_ASSET_VERSION_KEY, PROJECT_ASSET_VERSION);
+          return migrateBundledProjectAssets(savedProjects);
+        }
+        return savedProjects;
       }
     } catch (e) {
       console.error('Failed to load projects from localStorage', e);
@@ -227,7 +260,7 @@ export default function App() {
   // Persist to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('vr_platform_projects', JSON.stringify(projects));
+      localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(projects));
     } catch (e) {
       console.warn('LocalStorage save error:', e);
     }

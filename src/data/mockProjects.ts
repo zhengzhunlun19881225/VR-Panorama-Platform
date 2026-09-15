@@ -1,11 +1,13 @@
 import { VRProject } from '../types';
 import { generateProceduralEquirectangular, simulateTileGeneration } from '../utils/panoramaHelper';
 
+const panoramaAssetUrl = (filename: string) => new URL(`panoramas/${filename}`, document.baseURI).toString();
+
 // Pre-generate procedural equirectangular panorama data URLs for ultra-reliable instant preview
-const techLobbyEquirect = generateProceduralEquirectangular('tech', '1F 创新总部 · 穹顶科技大堂');
-const techExhibitEquirect = generateProceduralEquirectangular('cyber', '2F 沉浸式未来数字展厅');
-const techBoardroomEquirect = generateProceduralEquirectangular('luxury', '3F VIP 云端全景行政会议室');
-const techRooftopEquirect = generateProceduralEquirectangular('nature', '4F 顶层星空天台花园');
+const techLobbyEquirect = panoramaAssetUrl('tech-hq-1f.jpg');
+const techExhibitEquirect = panoramaAssetUrl('tech-hq-2f.jpg');
+const techBoardroomEquirect = panoramaAssetUrl('tech-hq-3f.jpg');
+const techRooftopEquirect = panoramaAssetUrl('tech-hq-4f.jpg');
 
 const villaLivingEquirect = generateProceduralEquirectangular('luxury', '山海天境 · 挑空全景海景客厅');
 const villaPoolEquirect = generateProceduralEquirectangular('nature', '山海天境 · 恒温无边际观海泳池');
